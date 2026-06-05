@@ -1,14 +1,12 @@
 ﻿import html
 import re
-import time
 from pathlib import Path
 
 import pandas as pd
 import plotly.express as px
 import streamlit as st
 
-from bert_predict import predict_distilbert_sentiment
-from predict import model_files_exist, predict_sentiment
+from model_service import MODEL_ID, predict_sentiment
 from preprocessing import NEGATIVE_WORDS, POSITIVE_WORDS, preprocess_text
 
 st.set_page_config(
@@ -140,6 +138,10 @@ def sentiment_class(sentiment):
     return "neutral"
 
 
+def format_confidence(value):
+    return f"{float(value) * 100:.2f}%"
+
+
 def render_card(label, value, subtitle=""):
     st.markdown(
         f"""
@@ -184,24 +186,25 @@ def explain_keywords(text):
 
 
 def run_ai_prediction(text):
-    result = predict_distilbert_sentiment(text)
-    if not result.get("error"):
-        result["engine"] = "DistilBERT sentiment engine"
-        return result
-
-    if model_files_exist():
-        fallback = predict_sentiment(text)
-        fallback["engine"] = "TF-IDF fallback engine"
-        fallback["error"] = None
-        return fallback
-
-    return {
-        "sentiment": "Unavailable",
-        "confidence": 0.0,
-        "processing_time": 0.0,
-        "engine": "No model available",
-        "error": result.get("error", "Sentiment engine could not be loaded."),
-    }
+    try:
+        result = predict_sentiment(text)
+        return {
+            "sentiment": result["label"],
+            "confidence": result["confidence"],
+            "probabilities": result["probabilities"],
+            "processing_time": result["inference_time"],
+            "engine": result["model_name"],
+            "error": None,
+        }
+    except (ValueError, RuntimeError) as error:
+        return {
+            "sentiment": "Unavailable",
+            "confidence": 0.0,
+            "probabilities": {"negative": 0.0, "neutral": 0.0, "positive": 0.0},
+            "processing_time": 0.0,
+            "engine": MODEL_ID,
+            "error": str(error),
+        }
 
 
 def run_batch(df, text_column):
@@ -214,11 +217,15 @@ def run_batch(df, text_column):
         text = safe_text(row[text_column])
         status.info(f"Analyzing record {index + 1} of {total}...")
         prediction = run_ai_prediction(text)
+        probabilities = prediction["probabilities"]
         rows.append(
             {
                 "Original Text": text,
                 "Sentiment": prediction["sentiment"],
                 "Confidence": prediction["confidence"],
+                "Negative Probability": probabilities["negative"],
+                "Neutral Probability": probabilities["neutral"],
+                "Positive Probability": probabilities["positive"],
                 "Processing Time": prediction["processing_time"],
                 "Engine": prediction["engine"],
             }
@@ -328,7 +335,7 @@ def single_analysis_page():
             <div class="card {card_class}">
                 <div class="small-label">Sentiment Result</div>
                 <div class="big-value">{html.escape(sentiment)}</div>
-                <p>Confidence: <strong>{prediction['confidence']:.2f}%</strong></p>
+                <p>Confidence: <strong>{format_confidence(prediction['confidence'])}</strong></p>
                 <p>Processing Time: <strong>{prediction['processing_time']:.4f}s</strong></p>
                 <p class="small-label">Engine: {html.escape(prediction['engine'])}</p>
             </div>
@@ -439,7 +446,7 @@ def analytics_page():
     k1.metric("Total Feedback", len(results))
     k2.metric("Positive", int(sentiment_counts.get("Positive", 0)))
     k3.metric("Negative", int(sentiment_counts.get("Negative", 0)))
-    k4.metric("Avg Confidence", f"{avg_conf:.2f}%")
+    k4.metric("Avg Confidence", format_confidence(avg_conf))
     st.metric("Most Common Sentiment", most_common)
 
     chart_df = sentiment_counts.reset_index()
@@ -456,6 +463,7 @@ def analytics_page():
         st.plotly_chart(style_chart(fig), use_container_width=True)
 
     fig = px.histogram(results, x="Confidence", nbins=12, title="Confidence Distribution", color="Sentiment", color_discrete_map=colors)
+    fig.update_xaxes(tickformat=".0%", title="Confidence")
     st.plotly_chart(style_chart(fig), use_container_width=True)
 
     st.markdown('<div class="section-title">Recent Feedback Results</div>', unsafe_allow_html=True)

@@ -20,20 +20,11 @@ data/*.xlsx
 data/*.json
 !data/.gitkeep
 
-# Trained/local model files
-models/*.pkl
-models/*.joblib
-models/*.bin
-models/*.pt
-models/*.pth
-models/*.safetensors
-models/*/
-!models/.gitkeep
-
 # Hugging Face and app caches
 .cache/
 cache/
 hf_cache/
+huggingface/
 
 # Generated exports
 exports/*.csv

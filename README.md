@@ -69,24 +69,29 @@ Run the app:
 streamlit run app.py
 ```
 
-## Optional Local Model Files
+## Production Sentiment Model
 
-The app uses a DistilBERT sentiment engine by default. If you also have trained TF-IDF fallback files, place them here:
+SentiScope AI Studio uses one production transformer sentiment model:
 
 ```text
-models/traditional_model.pkl
-models/tfidf_vectorizer.pkl
+cardiffnlp/twitter-roberta-base-sentiment-latest
 ```
 
-Model files are intentionally not included in GitHub because they can become large and are environment-specific.
+The model is loaded through Hugging Face Transformers and returns:
+
+- sentiment label
+- confidence score
+- probability distribution
+- inference time
+
+The first run may take longer because the model needs to download from Hugging Face. Later runs use the local Hugging Face cache.
 
 ## Project Structure
 
 ```text
 sentiscope-ai-studio/
 ├── app.py
-├── bert_predict.py
-├── predict.py
+├── model_service.py
 ├── preprocessing.py
 ├── requirements.txt
 ├── README.md
@@ -95,15 +100,13 @@ sentiscope-ai-studio/
 │   └── config.toml
 ├── data/
 │   └── .gitkeep
-├── models/
-│   └── .gitkeep
 └── exports/
     └── .gitkeep
 ```
 
 ## GitHub Notes
 
-The repository should include source code, configuration, documentation, and empty folder placeholders. It should not include datasets, exported CSV results, trained model files, caches, virtual environments, or local logs.
+The repository should include source code, configuration, documentation, and empty folder placeholders. It should not include datasets, exported CSV results, Hugging Face caches, virtual environments, or local logs.
 
 ## Portfolio Demo Flow
 
@@ -115,4 +118,4 @@ The repository should include source code, configuration, documentation, and emp
 
 ## Deployment Notes
 
-This project is ready for later deployment on Streamlit Community Cloud or a similar hosting platform. For deployment, ensure dependencies install correctly and avoid committing local datasets or model binaries to the repository.
+This project is ready for later deployment on Streamlit Community Cloud or a similar hosting platform. For deployment, ensure dependencies install correctly, the model can download from Hugging Face, and local datasets or generated exports are not committed to the repository.
