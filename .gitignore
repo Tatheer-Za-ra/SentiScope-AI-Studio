@@ -1,0 +1,48 @@
+﻿# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# IDE and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Local datasets
+data/*.csv
+data/*.xlsx
+data/*.json
+!data/.gitkeep
+
+# Trained/local model files
+models/*.pkl
+models/*.joblib
+models/*.bin
+models/*.pt
+models/*.pth
+models/*.safetensors
+models/*/
+!models/.gitkeep
+
+# Hugging Face and app caches
+.cache/
+cache/
+hf_cache/
+
+# Generated exports
+exports/*.csv
+exports/*.xlsx
+exports/*.json
+!exports/.gitkeep
+
+# Logs and temporary files
+*.log
+*.tmp
+temp/
+tmp/
