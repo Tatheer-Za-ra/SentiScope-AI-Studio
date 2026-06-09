@@ -1,23 +1,44 @@
-﻿# Python cache
+﻿# Python cache and bytecode
 __pycache__/
-*.pyc
+*.py[cod]
 *.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+*.egg-info/
+dist/
+build/
 
 # Virtual environments
 venv/
 env/
 .venv/
+ENV/
+.python-version
 
 # IDE and OS files
 .vscode/
 .idea/
 .DS_Store
 Thumbs.db
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+.settings/
+
+# Environment and secrets
+.env
+.env.local
+.streamlit/secrets.toml
 
 # Local datasets
+data/Twitter_Data.csv
 data/*.csv
 data/*.xlsx
 data/*.json
+!data/sample_reviews.csv
 !data/.gitkeep
 
 # Hugging Face and app caches
@@ -25,6 +46,16 @@ data/*.json
 cache/
 hf_cache/
 huggingface/
+.huggingface/
+
+# Fine-tuned model outputs and artifacts
+models/sentiment-transformer/
+models/*.pkl
+models/*.joblib
+models/*.bin
+models/*.safetensors
+models/*.pth
+!models/.gitkeep
 
 # Generated exports
 exports/*.csv
@@ -32,8 +63,21 @@ exports/*.xlsx
 exports/*.json
 !exports/.gitkeep
 
+# Generated evaluation reports
+reports/
+reports/*
+!reports/.gitkeep
+
 # Logs and temporary files
 *.log
+streamlit-err.log
+streamlit-out.log
 *.tmp
 temp/
 tmp/
+.streamlit/logs/
+
+# macOS
+.AppleDouble
+.LSOverride
+*.DS_Store
