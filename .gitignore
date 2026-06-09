@@ -34,12 +34,18 @@ Thumbs.db
 .streamlit/secrets.toml
 
 # Local datasets
-data/Twitter_Data.csv
-data/*.csv
-data/*.xlsx
-data/*.json
+data/*
 !data/sample_reviews.csv
 !data/.gitkeep
+
+
+# Generated exports
+exports/*
+!exports/.gitkeep
+
+# Generated evaluation reports
+reports/*
+!reports/.gitkeep
 
 # Hugging Face and app caches
 .cache/
@@ -48,25 +54,12 @@ hf_cache/
 huggingface/
 .huggingface/
 
+
 # Fine-tuned model outputs and artifacts
-models/sentiment-transformer/
-models/*.pkl
-models/*.joblib
-models/*.bin
-models/*.safetensors
-models/*.pth
+# Ignore all trained model files/folders, but keep the empty placeholder.
+models/*
 !models/.gitkeep
 
-# Generated exports
-exports/*.csv
-exports/*.xlsx
-exports/*.json
-!exports/.gitkeep
-
-# Generated evaluation reports
-reports/
-reports/*
-!reports/.gitkeep
 
 # Logs and temporary files
 *.log

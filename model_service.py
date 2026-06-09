@@ -1,11 +1,15 @@
 import os
 import time
 from functools import lru_cache
+from pathlib import Path
 
 os.environ.setdefault("TRANSFORMERS_NO_TORCHVISION", "1")
 os.environ.setdefault("USE_TORCHVISION", "0")
 
 MODEL_ID = "cardiffnlp/twitter-roberta-base-sentiment-latest"
+LOCAL_MODEL_PATH = Path("models/sentiment-transformer")
+LOCAL_MODEL_DISPLAY_NAME = "Fine-tuned Transformer Sentiment Model"
+BASE_MODEL_DISPLAY_NAME = "Base Twitter-RoBERTa Sentiment Model"
 
 LABEL_MAP = {
     0: "Negative",
@@ -19,9 +23,15 @@ PROBABILITY_KEYS = {
     2: "positive",
 }
 
+
+def local_model_available():
+    """A fine-tuned checkpoint is usable only after training saves config.json."""
+    return LOCAL_MODEL_PATH.exists() and (LOCAL_MODEL_PATH / "config.json").exists()
+
+
 @lru_cache(maxsize=1)
 def load_model():
-    """Load the production transformer once and reuse it for later predictions."""
+    """Load the fine-tuned local model if available, otherwise use the base model."""
     try:
         from transformers import AutoModelForSequenceClassification, AutoTokenizer
     except Exception as error:
@@ -29,17 +39,21 @@ def load_model():
             "Transformer dependencies are missing. Install requirements.txt first."
         ) from error
 
+    model_source = str(LOCAL_MODEL_PATH) if local_model_available() else MODEL_ID
+
     try:
-        tokenizer = AutoTokenizer.from_pretrained(MODEL_ID)
-        model = AutoModelForSequenceClassification.from_pretrained(MODEL_ID)
+        tokenizer = AutoTokenizer.from_pretrained(model_source)
+        model = AutoModelForSequenceClassification.from_pretrained(model_source)
         model.eval()
     except Exception as error:
         raise RuntimeError(
-            "Could not load the production sentiment model. Check your internet "
-            "connection for the first download, or verify the Hugging Face cache."
+            "Could not load the sentiment model. If the local fine-tuned model is "
+            "missing or incomplete, remove models/sentiment-transformer and retry "
+            "so the app can fall back to the base Hugging Face model."
         ) from error
 
-    return tokenizer, model
+    display_name = LOCAL_MODEL_DISPLAY_NAME if local_model_available() else BASE_MODEL_DISPLAY_NAME
+    return tokenizer, model, model_source, display_name
 
 
 def predict_sentiment(text):
@@ -57,7 +71,7 @@ def predict_sentiment(text):
             "PyTorch is required for transformer inference. Install requirements.txt first."
         ) from error
 
-    tokenizer, model = load_model()
+    tokenizer, model, model_source, display_name = load_model()
 
     encoded_text = tokenizer(
         clean_text,
@@ -82,5 +96,6 @@ def predict_sentiment(text):
         "confidence": probabilities[PROBABILITY_KEYS[predicted_index]],
         "probabilities": probabilities,
         "inference_time": time.perf_counter() - start_time,
-        "model_name": MODEL_ID,
+        "model_name": model_source,
+        "display_name": display_name,
     }
