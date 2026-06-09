@@ -5,6 +5,7 @@ from pathlib import Path
 import pandas as pd
 import plotly.express as px
 import streamlit as st
+import streamlit.components.v1 as components
 
 from model_service import MODEL_ID, predict_sentiment
 from preprocessing import NEGATIVE_WORDS, POSITIVE_WORDS, STOPWORDS
@@ -195,30 +196,93 @@ def load_css(theme_name):
             border-radius: 12px;
             border: 1px solid var(--border);
         }}
-        [data-testid="stFileUploadDropzone"],
-        [data-testid="stFileUploader"],
-        section[data-testid="stFileUploadDropzone"] {{
+        
+                /* File uploader main wrapper */
+        [data-testid="stFileUploader"] {{
+            background: transparent !important;
+            color: var(--text) !important;
+        }}
+
+        [data-testid="stFileUploader"] label,
+        [data-testid="stFileUploader"] label p,
+        [data-testid="stFileUploader"] p {{
+            color: var(--text) !important;
+        }}
+
+        /* Dropzone before file is selected */
+        [data-testid="stFileUploaderDropzone"],
+        [data-testid="stFileUploadDropzone"] {{
             background: var(--panel) !important;
             border: 2px dashed var(--border) !important;
+            border-radius: 14px !important;
             color: var(--text) !important;
         }}
-        [data-testid="stFileUploadDropzone"] *,
-        [data-testid="stFileUploader"] *,
-        section[data-testid="stFileUploadDropzone"] * {{
-            color: var(--text) !important;
-            fill: var(--text) !important;
-        }}
-        [data-testid="stFileUploadDropzone"] label,
-        [data-testid="stFileUploader"] label,
-        .stFileUploader label {{
+
+        [data-testid="stFileUploaderDropzone"] p,
+        [data-testid="stFileUploaderDropzone"] span,
+        [data-testid="stFileUploaderDropzone"] small,
+        [data-testid="stFileUploadDropzone"] p,
+        [data-testid="stFileUploadDropzone"] span,
+        [data-testid="stFileUploadDropzone"] small {{
             color: var(--text) !important;
         }}
-        [data-testid="stFileUploadDropzone"] button,
-        [data-testid="stFileUploader"] button,
-        .stFileUploader button {{
+
+        [data-testid="stFileUploaderDropzone"] small,
+        [data-testid="stFileUploadDropzone"] small {{
+            color: var(--muted) !important;
+        }}
+
+        [data-testid="stFileUploaderDropzone"] svg,
+        [data-testid="stFileUploadDropzone"] svg {{
             color: var(--accent) !important;
-            border-color: var(--accent) !important;
+            fill: var(--accent) !important;
         }}
+
+        /* Browse / upload button */
+        [data-testid="stFileUploaderDropzone"] button,
+        [data-testid="stFileUploadDropzone"] button {{
+            background: var(--panel-soft) !important;
+            color: var(--accent) !important;
+            border: 1px solid var(--accent) !important;
+            border-radius: 10px !important;
+            font-weight: 700 !important;
+        }}
+
+        /* Uploaded file chip/card after CSV is selected */
+        [data-testid="stFileUploaderFile"] {{
+            background: var(--panel-soft) !important;
+            border: 1px solid var(--border) !important;
+            border-radius: 12px !important;
+            color: var(--text) !important;
+            box-shadow: none !important;
+        }}
+
+        /* Uploaded filename and file size */
+        [data-testid="stFileUploaderFile"] div,
+        [data-testid="stFileUploaderFile"] span,
+        [data-testid="stFileUploaderFile"] p,
+        [data-testid="stFileUploaderFile"] small {{
+            color: var(--text) !important;
+        }}
+
+        [data-testid="stFileUploaderFile"] small {{
+            color: var(--muted) !important;
+        }}
+
+        /* File icon inside selected file chip */
+        [data-testid="stFileUploaderFile"] svg {{
+            color: var(--accent) !important;
+            fill: var(--accent) !important;
+        }}
+
+        /* Remove / close button on selected uploaded file */
+        [data-testid="stFileUploaderFile"] button,
+        [data-testid="stFileUploaderDeleteBtn"] {{
+            background: transparent !important;
+            color: var(--accent) !important;
+            border: 1px solid var(--accent) !important;
+            border-radius: 999px !important;
+        }}    
         </style>
         """
     st.markdown(css, unsafe_allow_html=True)
@@ -267,21 +331,68 @@ def sentiment_insight(sentiment):
     return "The feedback appears mostly informational, balanced, or without strong emotional tone."
 
 
+# def scroll_to_top():
+#     """Safely scroll the page to the top using multiple methods for compatibility."""
+#     st.markdown(
+#         """
+#         <script>
+#         try {{
+#             window.scrollTo({{ top: 0, behavior: 'instant' }});
+#         }} catch (e) {{
+#             window.scrollTo(0, 0);
+#         }}
+#         </script>
+#         """,
+#         unsafe_allow_html=True,
+#     )
+
 def scroll_to_top():
-    """Safely scroll the page to the top using multiple methods for compatibility."""
-    st.markdown(
+    """Scroll Streamlit page to the top after navigation."""
+    components.html(
         """
         <script>
-        try {{
-            window.scrollTo({{ top: 0, behavior: 'instant' }});
-        }} catch (e) {{
-            window.scrollTo(0, 0);
-        }}
+        function forceScrollTop() {
+            try {
+                const parentWindow = window.parent;
+                const parentDoc = parentWindow.document;
+
+                parentWindow.scrollTo(0, 0);
+
+                if (parentDoc.documentElement) {
+                    parentDoc.documentElement.scrollTop = 0;
+                }
+
+                if (parentDoc.body) {
+                    parentDoc.body.scrollTop = 0;
+                }
+
+                const possibleScrollContainers = [
+                    parentDoc.querySelector('[data-testid="stAppViewContainer"]'),
+                    parentDoc.querySelector('[data-testid="stMain"]'),
+                    parentDoc.querySelector('section[data-testid="stMain"]'),
+                    parentDoc.querySelector('section.main'),
+                    parentDoc.querySelector('.main')
+                ];
+
+                possibleScrollContainers.forEach(function(container) {
+                    if (container) {
+                        container.scrollTop = 0;
+                    }
+                });
+            } catch (error) {
+                console.log("Scroll-to-top skipped:", error);
+            }
+        }
+
+        forceScrollTop();
+        setTimeout(forceScrollTop, 50);
+        setTimeout(forceScrollTop, 150);
+        setTimeout(forceScrollTop, 300);
+        setTimeout(forceScrollTop, 700);
         </script>
         """,
-        unsafe_allow_html=True,
+        height=0,
     )
-
 
 def render_probability_bars(probabilities):
     rows = [
@@ -421,7 +532,7 @@ def run_batch(df, text_column):
         )
         progress.progress((index + 1) / total)
 
-    status.success("Analysis completed successfully.")
+    status.empty()
     results = pd.DataFrame(rows)
     results.to_csv(EXPORT_DIR / "sentiment_results.csv", index=False)
     return results
