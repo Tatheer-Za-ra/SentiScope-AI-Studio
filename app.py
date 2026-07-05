@@ -37,6 +37,18 @@ MODEL_EVALUATION_HELP = (
     "and Negative sentiment classes. It is based on macro F1 and was measured "
     "on a held-out test set."
 )
+TEXT_COLUMN_PRIORITY = (
+    "text",
+    "review",
+    "tweet_text",
+    "full_text",
+    "comment",
+    "feedback",
+    "tweet",
+    "content",
+    "message",
+    "clean_text",
+)
 
 
 def get_theme_palette(theme_name):
@@ -454,10 +466,15 @@ def render_model_info_card():
 
 
 def detect_text_columns(df):
-    common = ["text", "tweet", "review", "comment", "content", "message", "clean_text", "feedback"]
-    detected = [col for col in df.columns if col.lower().strip() in common]
+    detected = [col for col in df.columns if str(col).lower().strip() in TEXT_COLUMN_PRIORITY]
     text_like = [col for col in df.columns if df[col].dtype == "object" and col not in detected]
     return detected + text_like
+
+
+def non_empty_text_rows(df, text_column):
+    clean_df = df.dropna(subset=[text_column]).copy()
+    clean_df[text_column] = clean_df[text_column].astype(str).str.strip()
+    return clean_df[clean_df[text_column] != ""]
 
 
 def dataframe_to_csv_bytes(df):
@@ -513,9 +530,9 @@ def run_batch(df, text_column):
     status = st.empty()
     total = len(df)
 
-    for index, row in df.iterrows():
+    for position, (_, row) in enumerate(df.iterrows(), start=1):
         text = safe_text(row[text_column])
-        status.info(f"Analyzing feedback record {index + 1} of {total}…")
+        status.info(f"Analyzing feedback record {position} of {total}…")
         prediction = run_ai_prediction(text)
         probabilities = prediction["probabilities"]
         highest_cat = highest_probability_category(probabilities)
@@ -530,7 +547,7 @@ def run_batch(df, text_column):
                 "highest_probability_category": highest_cat,
             }
         )
-        progress.progress((index + 1) / total)
+        progress.progress(position / total)
 
     status.empty()
     results = pd.DataFrame(rows)
@@ -714,7 +731,7 @@ def single_analysis_page():
 
 def batch_page():
     st.markdown('<div class="section-title">Batch Analysis</div>', unsafe_allow_html=True)
-    st.caption("Upload a CSV file containing customer reviews, comments, or survey feedback.")
+    st.caption("Upload CSV feedback, including Xquik exports with tweet_text or full_text columns.")
     render_model_info_card()
 
     uploaded = st.file_uploader("Upload CSV", type=["csv"])
@@ -734,7 +751,7 @@ def batch_page():
 
     text_columns = detect_text_columns(df)
     if not text_columns:
-        st.error("No feedback text column found. Please upload a CSV with columns like: text, review, comment, feedback, content, or message.")
+        st.error("No feedback text column found. Please upload a CSV with columns like: text, review, tweet_text, full_text, comment, feedback, content, or message.")
         return
 
     st.markdown("**Select the column that contains the review, comment, tweet, or feedback text you want to analyze.**")
@@ -752,18 +769,19 @@ def batch_page():
     for i, sample in enumerate(sample_texts, 1):
         st.caption(f"Sample {i}: {safe_text(sample)[:100]}…" if len(safe_text(sample)) > 100 else f"Sample {i}: {sample}")
 
+    blank_text_count = int(df[selected_column].fillna("").astype(str).str.strip().eq("").sum())
     c1, c2, c3 = st.columns(3)
     c1.metric("Total Rows", len(df))
-    c2.metric("Missing Text", int(df[selected_column].isna().sum()))
+    c2.metric("Blank Text", blank_text_count)
     c3.metric("Columns", len(df.columns))
 
     st.markdown("**Dataset Preview**")
     st.dataframe(df.head(8), use_container_width=True)
 
     if st.button("Run Feedback Sentiment Analysis"):
-        clean_df = df.dropna(subset=[selected_column]).copy()
+        clean_df = non_empty_text_rows(df, selected_column)
         if clean_df.empty:
-            st.warning("No feedback text rows found after removing missing values.")
+            st.warning("No feedback text rows found after removing blank values.")
             return
         with st.spinner("Analyzing feedback with AI. This may take a moment."):
             results = run_batch(clean_df, selected_column)
