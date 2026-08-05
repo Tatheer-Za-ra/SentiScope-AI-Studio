@@ -148,7 +148,7 @@ def load_css(theme_name):
             max-width: 1440px !important;
             margin-left: auto !important;
             margin-right: auto !important;
-            padding-bottom: env(safe-area-inset-bottom, 1.5rem) !important;
+            padding-bottom: max(2rem, env(safe-area-inset-bottom, 2rem)) !important;
         }}
         [data-testid="stSidebar"] {{
             background: var(--sidebar) !important;
@@ -400,6 +400,7 @@ def load_css(theme_name):
             margin-left: 0.5rem;
         }}
         .section-spacer {{ height: 1.25rem; }}
+        .page-bottom-spacer {{ display: none !important; }}
 
         /* ── Cards (Mobile-First Controlled Sizing & Fluid Padding) ── */
         .card {{
@@ -407,6 +408,7 @@ def load_css(theme_name):
             border: 1px solid var(--border);
             border-radius: 18px;
             padding: clamp(1rem, 3vw, 1.4rem); /* Adaptive internal padding across viewports */
+            margin-bottom: 1.25rem; /* Clean, tight bottom spacing across all viewports */
             box-shadow: var(--shadow);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
@@ -433,25 +435,25 @@ def load_css(theme_name):
             box-shadow: var(--shadow), -2px 0 20px var(--glow-blue);
         }}
 
-        /* ── Nav Feature Cards (Mobile-First Strict Sizing & Anti-Cropping) ── */
+        /* ── Nav Feature Cards (Strict Equal Height Grid Sizing Across All Viewports) ── */
         .nav-card {{
             background: var(--panel);
             border: 1px solid var(--border);
             border-radius: 18px;
-            padding: clamp(1rem, 2.5vw, 1.4rem); /* Adaptive spacing prevents text clipping */
+            padding: clamp(0.9rem, 2vw, 1.35rem); /* Adaptive spacing */
             box-shadow: var(--shadow);
             transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
             text-align: left;
             width: 100%; /* Prevents card squishing on mobile */
             min-width: 0; /* Ensures flex container child text truncation doesn't break layout */
-            min-height: 220px; /* Fluid minimum height prevents text cropping on 1024px tablet screens */
-            height: 100%; /* Dynamic height matching across multi-column layout */
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            margin-bottom: clamp(0.85rem, 2vw, 1.25rem); /* Space between card and CTA button below */
+            height: 240px !important; /* Strict equal height normalization across all 3 grid cards */
+            min-height: 240px !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: space-between !important;
+            margin-bottom: clamp(0.75rem, 2vw, 1.1rem); /* Space between card and CTA button below */
             position: relative;
-            overflow: visible; /* Prevents text from getting cut off at bottom of card */
+            overflow: hidden;
         }}
         .nav-card:hover {{
             transform: translateY(-5px);
@@ -459,37 +461,70 @@ def load_css(theme_name):
             box-shadow: 0 24px 48px rgba(0,0,0,.30), 0 0 0 1px var(--accent);
         }}
         .nav-card-icon {{
-            font-size: clamp(1.5rem, 3vw, 2rem); /* Dynamic scaling for card icon */
-            margin-bottom: 0.6rem;
+            font-size: clamp(1.4rem, 2.8vw, 1.8rem); /* Dynamic scaling for card icon */
+            margin-bottom: 0.35rem;
             display: block;
         }}
         .nav-card-label {{
-            font-size: clamp(0.68rem, 1.8vw, 0.72rem);
+            font-size: clamp(0.65rem, 1.5vw, 0.72rem);
             font-weight: 700;
             letter-spacing: 0.1em;
             text-transform: uppercase;
             color: var(--accent);
-            margin-bottom: 0.2rem;
+            margin-bottom: 0.15rem;
         }}
         .nav-card-title {{
             font-family: 'Space Grotesk', sans-serif;
-            font-size: clamp(1rem, 2.2vw, 1.15rem); /* Fluid title scaling */
+            font-size: clamp(0.95rem, 2vw, 1.12rem); /* Fluid title scaling */
             font-weight: 700;
             color: var(--text);
-            margin-bottom: 0.4rem;
+            margin-bottom: 0.25rem;
         }}
         .nav-card-desc {{
-            font-size: clamp(0.78rem, 1.8vw, 0.82rem);
+            font-size: clamp(0.75rem, 1.6vw, 0.82rem);
             color: var(--muted);
-            line-height: 1.55;
+            line-height: 1.45;
             flex: 1;
+            display: -webkit-box;
+            -webkit-line-clamp: 4;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }}
 
         @media (max-width: 1150px) {{
             .nav-card {{
-                min-height: 210px !important;
-                padding: 1.1rem 1rem !important;
+                height: auto !important;
+                min-height: 240px !important;
+                padding: 0.85rem 0.75rem !important;
+                margin-bottom: 0.75rem !important;
+                overflow: visible !important;
+            }}
+            .nav-card-icon {{
+                font-size: 1.35rem !important;
+                margin-bottom: 0.25rem !important;
+            }}
+            .nav-card-title {{
+                font-size: 0.95rem !important;
+                line-height: 1.2 !important;
+                margin-bottom: 0.2rem !important;
+            }}
+            .nav-card-desc {{
+                font-size: 0.74rem !important;
+                line-height: 1.38 !important;
+                -webkit-line-clamp: 4 !important;
+                overflow: visible !important;
+            }}
+        }}
+
+        @media (max-width: 576px) {{
+            .nav-card {{
+                height: auto !important; /* Stacked layout fluid height for mobile phones */
+                min-height: 160px !important;
                 margin-bottom: 0.85rem !important;
+                padding: 1rem !important;
+            }}
+            .nav-card-icon {{
+                font-size: 1.6rem !important;
             }}
             .nav-card-title {{
                 font-size: 1.05rem !important;
@@ -497,14 +532,6 @@ def load_css(theme_name):
             .nav-card-desc {{
                 font-size: 0.8rem !important;
                 line-height: 1.5 !important;
-            }}
-        }}
-
-        @media (max-width: 768px) {{
-            .nav-card {{
-                height: auto !important; /* Fluid height adaptation for small screens */
-                min-height: 170px !important; /* Strict minimum height constraint on mobile */
-                margin-bottom: 0.85rem !important; /* Reduced bottom margin on small screens */
             }}
         }}
 
@@ -723,6 +750,24 @@ def load_css(theme_name):
 
         .stButton > button:active, .stDownloadButton > button:active {{
             transform: translateY(0) !important;
+        }}
+
+        /* ── Grid Column Buttons Equal Sizing Override ── */
+        [data-testid="stColumn"] .stButton > button {{
+            height: 56px !important;
+            min-height: 56px !important;
+            max-height: 56px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            text-align: center !important;
+            line-height: 1.2 !important;
+            padding: 0.4rem 0.6rem !important;
+        }}
+        [data-testid="stColumn"] .stButton > button * {{
+            text-align: center !important;
+            font-size: 0.88rem !important;
+            line-height: 1.2 !important;
         }}
 
         /* ── Sidebar Buttons Override (Default / Inactive - 44px Touch Target) ── */
@@ -1374,7 +1419,7 @@ def overview_page():
             """,
             unsafe_allow_html=True,
         )
-        if st.button("→ Go to Analyze Text", key="cta_analyze", use_container_width=True):
+        if st.button("→ Analyze Text", key="cta_analyze", use_container_width=True):
             st.session_state.page = "Analyze Text"
             st.rerun()
 
@@ -1390,7 +1435,7 @@ def overview_page():
             """,
             unsafe_allow_html=True,
         )
-        if st.button("→ Go to Batch Analysis", key="cta_batch", use_container_width=True):
+        if st.button("→ Batch Analysis", key="cta_batch", use_container_width=True):
             st.session_state.page = "Batch Analysis"
             st.rerun()
 
@@ -1424,6 +1469,7 @@ def overview_page():
                 decision-making. The AI engine is optimized for real-world customer language — not just formal reviews.
             </p>
         </div>
+        <div class="page-bottom-spacer"></div>
         """,
         unsafe_allow_html=True,
     )
