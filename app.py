@@ -405,6 +405,42 @@ def load_css(theme_name):
         .section-spacer {{ height: 1.25rem; }}
         .page-bottom-spacer {{ display: none !important; }}
 
+        /* ── Stale Results Banner ── */
+        .stale-results-banner {{
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            background: linear-gradient(135deg, rgba(245,158,11,0.15), rgba(217,119,6,0.10));
+            border: 1.5px solid rgba(245,158,11,0.55);
+            border-left: 4px solid #F59E0B;
+            border-radius: 12px;
+            padding: 0.85rem 1.1rem;
+            margin: 0.75rem 0 1rem 0;
+            animation: fadeInUp 0.3s ease forwards;
+        }}
+        .stale-banner-icon {{
+            font-size: 1.3rem;
+            line-height: 1;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }}
+        .stale-banner-body {{
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+        }}
+        .stale-banner-title {{
+            font-weight: 700;
+            font-size: 0.92rem;
+            color: #D97706;
+            font-family: 'Space Grotesk', sans-serif;
+        }}
+        .stale-banner-msg {{
+            font-size: 0.82rem;
+            color: var(--subtext);
+            line-height: 1.45;
+        }}
+
         /* ── Cards (Mobile-First Controlled Sizing & Fluid Padding) ── */
         .card {{
             background: var(--panel);
@@ -1715,6 +1751,13 @@ def batch_page():
     render_model_info_card()
 
     uploaded = st.file_uploader("Upload CSV", type=["csv"])
+
+    # Track file identity so we can detect when a new file replaces the previous one
+    if uploaded is not None:
+        current_file_id = (uploaded.name, uploaded.size)
+    else:
+        current_file_id = None
+
     if uploaded is None:
         st.info("Upload a CSV file containing customer feedback to begin batch analysis.")
         return
@@ -1770,11 +1813,36 @@ def batch_page():
         with st.spinner("Analyzing feedback with AI. This may take a moment."):
             results = run_batch(clean_df, selected_column)
         st.session_state.batch_results = results
+        # Mark which file these results belong to — clears stale state
+        st.session_state.batch_file_id = current_file_id
         st.success("✓ Analysis completed successfully.")
 
     results = st.session_state.get("batch_results")
     if results is not None and not results.empty:
         st.markdown('<div class="section-title">📋 Prediction Results</div>', unsafe_allow_html=True)
+
+        # Show a stale-results banner if the current file differs from the one that produced results
+        saved_file_id = st.session_state.get("batch_file_id")
+        is_stale = (saved_file_id is not None) and (current_file_id != saved_file_id)
+        if is_stale:
+            prev_name = saved_file_id[0] if saved_file_id else "previous file"
+            curr_name = current_file_id[0] if current_file_id else "new file"
+            st.markdown(
+                f'''
+                <div class="stale-results-banner">
+                    <div class="stale-banner-icon">⚠️</div>
+                    <div class="stale-banner-body">
+                        <div class="stale-banner-title">Showing results from a previous file</div>
+                        <div class="stale-banner-msg">
+                            The table below shows results for <strong>{prev_name}</strong>.
+                            You have uploaded <strong>{curr_name}</strong> — click
+                            <strong>"⚡ Run Feedback Sentiment Analysis"</strong> above to analyze the new file.
+                        </div>
+                    </div>
+                </div>
+                ''',
+                unsafe_allow_html=True,
+            )
 
         display_results = results.copy()
         if "highest_probability_category" in display_results.columns:
