@@ -773,15 +773,27 @@ def load_css(theme_name):
             line-height: 1.2 !important;
         }}
 
-        /* ── Mobile 2x2 Responsive Grid for Multi-Column Sample Buttons ── */
+        /* ── Mobile 1-Column Stacked Cards & 2x2 Sample Buttons Grid ── */
         @media (max-width: 640px) {{
             [data-testid="stHorizontalBlock"] {{
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 0.65rem !important;
+                width: 100% !important;
+            }}
+            [data-testid="stHorizontalBlock"] > [data-testid="stColumn"] {{
+                width: 100% !important;
+                min-width: 100% !important;
+                max-width: 100% !important;
+                flex: 1 1 100% !important;
+            }}
+            .sample-grid-wrap [data-testid="stHorizontalBlock"] {{
                 display: grid !important;
                 grid-template-columns: repeat(2, 1fr) !important;
                 gap: 0.5rem !important;
                 width: 100% !important;
             }}
-            [data-testid="stHorizontalBlock"] > [data-testid="stColumn"] {{
+            .sample-grid-wrap [data-testid="stHorizontalBlock"] > [data-testid="stColumn"] {{
                 width: 100% !important;
                 min-width: 0 !important;
                 flex: 1 1 45% !important;
@@ -795,16 +807,38 @@ def load_css(theme_name):
                 min-height: 48px !important;
                 max-height: 48px !important;
                 padding: 0.35rem 0.45rem !important;
-                font-size: 0.82rem !important;
+                font-size: 0.88rem !important;
                 display: flex !important;
                 align-items: center !important;
                 justify-content: center !important;
                 text-align: center !important;
             }}
             [data-testid="stHorizontalBlock"] .stButton > button * {{
-                font-size: 0.82rem !important;
+                font-size: 0.88rem !important;
                 text-align: center !important;
                 line-height: 1.15 !important;
+            }}
+            .nav-card {{
+                height: auto !important;
+                min-height: 140px !important;
+                padding: 1.15rem 1.1rem !important;
+                margin-bottom: 0.65rem !important;
+                overflow: visible !important;
+            }}
+            .nav-card-icon {{
+                font-size: 1.6rem !important;
+                margin-bottom: 0.35rem !important;
+            }}
+            .nav-card-title {{
+                font-size: 1.1rem !important;
+                line-height: 1.3 !important;
+                margin-bottom: 0.35rem !important;
+            }}
+            .nav-card-desc {{
+                font-size: 0.84rem !important;
+                line-height: 1.5 !important;
+                -webkit-line-clamp: none !important;
+                overflow: visible !important;
             }}
         }}
 
