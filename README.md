@@ -109,7 +109,7 @@ Balanced Quality Score is based on macro F1 and measures how consistently the mo
 For batch analysis, upload a CSV file with a column containing customer feedback text. Common supported column names:
 
 ```
-text, review, comment, feedback, tweet, content, message, clean_text
+text, review, tweet_text, full_text, comment, feedback, tweet, content, message, clean_text
 ```
 
 Example:
@@ -119,7 +119,7 @@ Example:
 | The product quality is excellent and delivery was fast. |
 | The app crashes whenever I try to checkout. |
 
-The app will auto-detect the text column. If multiple text-like columns exist, you can choose which one to analyze.
+The app will auto-detect the text column, including Xquik exports with `tweet_text` or `full_text`. If multiple text-like columns exist, you can choose which one to analyze.
 
 ## Local Setup
 
