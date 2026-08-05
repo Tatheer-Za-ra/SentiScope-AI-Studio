@@ -773,8 +773,8 @@ def load_css(theme_name):
             line-height: 1.2 !important;
         }}
 
-        /* ── Mobile 1-Column Stacked Cards & 2x2 Sample Buttons Grid ── */
-        @media (max-width: 640px) {{
+        /* ── Mobile & Tablet 1-Column Stacked Cards & 2x2 Sample Buttons Grid (<= 768px) ── */
+        @media (max-width: 768px) {{
             [data-testid="stHorizontalBlock"] {{
                 display: flex !important;
                 flex-direction: column !important;
@@ -839,6 +839,82 @@ def load_css(theme_name):
                 line-height: 1.5 !important;
                 -webkit-line-clamp: none !important;
                 overflow: visible !important;
+            }}
+        }}
+
+        /* ── File Uploader Modern Clean Layout (Zero Overlap & Anti-Truncation) ── */
+        [data-testid="stFileUploaderDropzone"] {{
+            background: var(--panel) !important;
+            border: 2px dashed var(--border) !important;
+            border-radius: 16px !important;
+            padding: 1.25rem 1rem !important;
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            justify-content: center !important;
+            text-align: center !important;
+            gap: 0.5rem !important;
+            min-height: 170px !important;
+            height: auto !important;
+            overflow: visible !important;
+            box-shadow: none !important;
+            position: relative !important;
+        }}
+        [data-testid="stFileUploaderDropzone"]:hover {{
+            border-color: var(--accent) !important;
+            background: var(--panel-soft) !important;
+        }}
+        [data-testid="stFileUploaderDropzoneInstructions"] {{
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            justify-content: center !important;
+            text-align: center !important;
+            gap: 0.3rem !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+            position: relative !important;
+        }}
+        [data-testid="stFileUploaderDropzoneInstructions"] svg {{
+            width: 36px !important;
+            height: 36px !important;
+            margin: 0 auto 0.25rem auto !important;
+            display: block !important;
+            position: static !important;
+            flex-shrink: 0 !important;
+        }}
+        [data-testid="stFileUploaderDropzoneInstructions"] div,
+        [data-testid="stFileUploaderDropzoneInstructions"] span,
+        [data-testid="stFileUploaderDropzoneInstructions"] small,
+        [data-testid="stFileUploaderDropzoneInstructions"] p {{
+            white-space: normal !important;
+            word-break: break-word !important;
+            overflow: visible !important;
+            text-overflow: clip !important;
+            text-overflow: unset !important;
+            text-align: center !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            position: static !important;
+        }}
+        [data-testid="stFileUploaderDropzone"] button {{
+            margin-top: 0.5rem !important;
+            margin-bottom: 0 !important;
+            position: static !important;
+            min-height: 42px !important;
+            height: auto !important;
+            padding: 0.5rem 1.25rem !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            border-radius: 10px !important;
+            width: auto !important;
+            max-width: 100% !important;
+        }}
+        @media (max-width: 640px) {{
+            [data-testid="stFileUploaderDropzone"] button {{
+                width: 100% !important;
             }}
         }}
 
