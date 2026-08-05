@@ -1469,7 +1469,6 @@ def overview_page():
                 decision-making. The AI engine is optimized for real-world customer language — not just formal reviews.
             </p>
         </div>
-        <div class="page-bottom-spacer"></div>
         """,
         unsafe_allow_html=True,
     )
