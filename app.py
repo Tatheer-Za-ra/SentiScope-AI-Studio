@@ -1298,9 +1298,9 @@ def clean_export_dataframe(results_dataframe):
         "negative_probability",
         "neutral_probability",
         "positive_probability",
-        "highest_probability_category",
     ]
-    return results_dataframe[export_columns].copy()
+    cols = [c for c in export_columns if c in results_dataframe.columns]
+    return results_dataframe[cols].copy()
 
 
 def render_kpi_card(icon, label, value, subtitle="", color="accent"):
@@ -1777,8 +1777,10 @@ def batch_page():
         st.markdown('<div class="section-title">📋 Prediction Results</div>', unsafe_allow_html=True)
 
         display_results = results.copy()
+        if "highest_probability_category" in display_results.columns:
+            display_results = display_results.drop(columns=["highest_probability_category"])
         display_results.columns = [
-            "Text", "Sentiment", "Confidence", "Negative %", "Neutral %", "Positive %", "Category"
+            "Text", "Sentiment", "Confidence", "Negative %", "Neutral %", "Positive %"
         ]
         st.dataframe(display_results, use_container_width=True)
 
