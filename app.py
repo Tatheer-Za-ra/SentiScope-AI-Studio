@@ -1,4 +1,4 @@
-﻿import html
+import html
 import re
 from pathlib import Path
 
@@ -50,42 +50,60 @@ TEXT_COLUMN_PRIORITY = (
     "clean_text",
 )
 
+PAGE_ICONS = {
+    "Overview": "🏠",
+    "Analyze Text": "🔍",
+    "Batch Analysis": "📊",
+    "Insights Dashboard": "📈",
+    "About": "ℹ️",
+}
+
 
 def get_theme_palette(theme_name):
     if theme_name == "Light Mode":
         return {
-            "bg": "#F8FAFC",
+            "bg": "#F4F6FF",
             "sidebar": "#FFFFFF",
             "panel": "#FFFFFF",
-            "panel_soft": "#F1F5F9",
-            "border": "#E2E8F0",
+            "panel_soft": "#EEF2FF",
+            "border": "#C7D2FE",
             "text": "#0F172A",
             "muted": "#475569",
-            "accent": "#2563EB",
-            "accent_2": "#1D4ED8",
+            "accent": "#6366F1",
+            "accent_2": "#A855F7",
             "green": "#16A34A",
             "red": "#DC2626",
-            "blue": "#64748B",
-            "shadow": "0 18px 36px rgba(15,23,42,.10)",
+            "blue": "#3B82F6",
+            "shadow": "0 20px 40px rgba(99,102,241,.13)",
             "input_bg": "#FFFFFF",
-            "grid": "#E2E8F0",
+            "grid": "#C7D2FE",
+            "glow_green": "rgba(22,163,74,.25)",
+            "glow_red": "rgba(220,38,38,.25)",
+            "glow_blue": "rgba(59,130,246,.25)",
+            "glow_accent": "rgba(99,102,241,.30)",
+            "hero_grad": "linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 50%, #F4F6FF 100%)",
         }
     return {
-        "bg": "#0B1120",
-        "sidebar": "#0B1120",
-        "panel": "#111827",
-        "panel_soft": "#172033",
-        "border": "#1E293B",
-        "text": "#F8FAFC",
-        "muted": "#CBD5E1",
-        "accent": "#38BDF8",
-        "accent_2": "#2563EB",
-        "green": "#22C55E",
-        "red": "#EF4444",
+        "bg": "#060B18",
+        "sidebar": "#080E1C",
+        "panel": "#0D1526",
+        "panel_soft": "#111E33",
+        "border": "#1A2847",
+        "text": "#F0F6FF",
+        "muted": "#94A3B8",
+        "accent": "#818CF8",
+        "accent_2": "#A78BFA",
+        "green": "#34D399",
+        "red": "#F87171",
         "blue": "#60A5FA",
-        "shadow": "0 18px 40px rgba(0,0,0,.22)",
-        "input_bg": "#0F172A",
-        "grid": "#263A59",
+        "shadow": "0 24px 48px rgba(0,0,0,.35)",
+        "input_bg": "#0A1020",
+        "grid": "#1A2847",
+        "glow_green": "rgba(52,211,153,.20)",
+        "glow_red": "rgba(248,113,113,.20)",
+        "glow_blue": "rgba(96,165,250,.20)",
+        "glow_accent": "rgba(129,140,248,.20)",
+        "hero_grad": "linear-gradient(135deg, #0D1526 0%, #111E33 50%, #0D1526 100%)",
     }
 
 
@@ -93,6 +111,8 @@ def load_css(theme_name):
     palette = get_theme_palette(theme_name)
     css = f"""
         <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
         :root {{
             --bg: {palette["bg"]};
             --sidebar: {palette["sidebar"]};
@@ -108,6 +128,16 @@ def load_css(theme_name):
             --blue: {palette["blue"]};
             --shadow: {palette["shadow"]};
             --input-bg: {palette["input_bg"]};
+            --glow-green: {palette["glow_green"]};
+            --glow-red: {palette["glow_red"]};
+            --glow-blue: {palette["glow_blue"]};
+            --glow-accent: {palette["glow_accent"]};
+        }}
+
+        /* ── Base ── */
+        *, *::before, *::after {{ box-sizing: border-box; }}
+        html, body, .stApp {{
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif !important;
         }}
         .stApp, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {{
             background: var(--bg) !important;
@@ -115,88 +145,535 @@ def load_css(theme_name):
         }}
         [data-testid="stSidebar"] {{
             background: var(--sidebar) !important;
-            border-right: 1px solid var(--border);
+            border-right: 1px solid var(--border) !important;
         }}
-        h1, h2, h3, h4, h5, h6, p, li, label, span, div {{
+        h1, h2, h3, h4, h5, h6 {{
+            font-family: 'Space Grotesk', 'Inter', sans-serif !important;
+            color: var(--text) !important;
+            letter-spacing: -0.02em;
+        }}
+        p, li, label, span, div, caption {{
             color: var(--text);
         }}
-        .hero {{
-            padding: 2rem;
+
+        /* ── Sidebar Brand ── */
+        .sidebar-brand {{
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0 0 0.25rem 0;
+            margin-bottom: 0.5rem;
+        }}
+        .sidebar-logo-ring {{
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 14px var(--glow-accent);
+            flex-shrink: 0;
+        }}
+        .sidebar-brand-name {{
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 1.05rem;
+            color: var(--text) !important;
+            line-height: 1.2;
+        }}
+        .sidebar-brand-sub {{
+            font-size: 0.7rem;
+            color: var(--muted);
+            font-weight: 400;
+        }}
+        .engine-badge {{
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: var(--panel-soft);
             border: 1px solid var(--border);
-            border-radius: 18px;
-            background: linear-gradient(135deg, var(--panel) 0%, var(--panel-soft) 100%);
-            margin-bottom: 1.5rem;
+            border-radius: 999px;
+            padding: 4px 10px;
+            font-size: 0.72rem;
+            color: var(--green);
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }}
+        .engine-badge-dot {{
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--green);
+            box-shadow: 0 0 6px var(--glow-green);
+            animation: pulse-dot 2s ease-in-out infinite;
+        }}
+        @keyframes pulse-dot {{
+            0%, 100% {{ opacity: 1; transform: scale(1); }}
+            50% {{ opacity: 0.6; transform: scale(0.8); }}
+        }}
+
+        /* ── Hero ── */
+        @keyframes hero-shimmer {{
+            0% {{ background-position: 0% 50%; }}
+            50% {{ background-position: 100% 50%; }}
+            100% {{ background-position: 0% 50%; }}
+        }}
+        @keyframes fadeInUp {{
+            from {{ opacity: 0; transform: translateY(18px); }}
+            to {{ opacity: 1; transform: translateY(0); }}
+        }}
+        @keyframes fadeIn {{
+            from {{ opacity: 0; }}
+            to {{ opacity: 1; }}
+        }}
+        .hero {{
+            padding: 2.5rem 2.5rem;
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            background: {palette["hero_grad"]};
+            background-size: 300% 300%;
+            animation: hero-shimmer 8s ease infinite, fadeInUp 0.6s ease forwards;
+            margin-bottom: 1.75rem;
+            position: relative;
+            overflow: hidden;
+        }}
+        .hero::before {{
+            content: '';
+            position: absolute;
+            top: -60px; right: -60px;
+            width: 220px; height: 220px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--glow-accent) 0%, transparent 70%);
+            pointer-events: none;
+        }}
+        .hero::after {{
+            content: '';
+            position: absolute;
+            bottom: -40px; left: 20%;
+            width: 160px; height: 160px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--glow-blue) 0%, transparent 70%);
+            pointer-events: none;
+        }}
+        .hero-eyebrow {{
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 700;
+            font-size: 0.78rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-bottom: 0.6rem;
         }}
         .hero-title {{
-            font-size: 3rem;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 3.2rem;
             font-weight: 800;
-            letter-spacing: 0;
-            margin-bottom: .4rem;
+            letter-spacing: -0.03em;
+            line-height: 1.1;
+            margin-bottom: 0.75rem;
+            color: var(--text) !important;
+        }}
+        .hero-title .accent-word {{
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }}
         .subtitle {{
             color: var(--muted);
-            font-size: 1.08rem;
-            line-height: 1.7;
+            font-size: 1.05rem;
+            line-height: 1.75;
+            max-width: 560px;
+            margin-bottom: 1.5rem;
         }}
+        .hero-stats {{
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }}
+        .hero-stat {{
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--muted);
+        }}
+        .hero-stat-icon {{
+            font-size: 1rem;
+        }}
+        .hero-stat strong {{
+            color: var(--text);
+        }}
+
+        /* ── Section Titles ── */
         .section-title {{
-            font-size: 1.45rem;
-            font-weight: 750;
-            margin: 1.2rem 0 .7rem 0;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.35rem;
+            font-weight: 700;
+            margin: 1.5rem 0 0.75rem 0;
+            color: var(--text) !important;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }}
-        .section-spacer {{
-            height: 1.5rem;
+        .section-title::after {{
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(to right, var(--border), transparent);
+            margin-left: 0.5rem;
         }}
+        .section-spacer {{ height: 1.25rem; }}
+
+        /* ── Cards ── */
         .card {{
             background: var(--panel);
             border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 1.1rem;
+            border-radius: 18px;
+            padding: 1.4rem;
             box-shadow: var(--shadow);
-            min-height: 100px;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            transition: box-shadow 0.25s ease, transform 0.25s ease, border-color 0.25s ease;
+            animation: fadeInUp 0.45s ease forwards;
         }}
-        .metric-card {{
+        .card:hover {{
+            transform: translateY(-2px);
+            box-shadow: 0 28px 56px rgba(0,0,0,.28);
+            border-color: var(--accent);
+        }}
+        .card.positive {{
+            border-left: 4px solid var(--green);
+            box-shadow: var(--shadow), -2px 0 20px var(--glow-green);
+        }}
+        .card.negative {{
+            border-left: 4px solid var(--red);
+            box-shadow: var(--shadow), -2px 0 20px var(--glow-red);
+        }}
+        .card.neutral {{
+            border-left: 4px solid var(--blue);
+            box-shadow: var(--shadow), -2px 0 20px var(--glow-blue);
+        }}
+
+        /* ── Nav Feature Cards ── */
+        .nav-card {{
             background: var(--panel);
             border: 1px solid var(--border);
-            border-radius: 14px;
-            padding: 1rem;
+            border-radius: 18px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+            text-align: left;
+            width: 100%;
+            height: 220px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            margin-bottom: 1.25rem;
+            position: relative;
+            overflow: hidden;
         }}
-        .small-label {{ color: var(--muted); font-size: .85rem; }}
-        .big-value {{ font-size: 1.65rem; font-weight: 800; margin-top: .25rem; }}
-        .insight-text {{ color: var(--muted); line-height: 1.65; }}
-        .positive {{ border-left: 5px solid var(--green); }}
-        .negative {{ border-left: 5px solid var(--red); }}
-        .neutral {{ border-left: 5px solid var(--blue); }}
-        .highlight-pos {{ background: rgba(22,163,74,.16); color: var(--green); padding: 2px 6px; border-radius: 7px; font-weight: 700; }}
-        .highlight-neg {{ background: rgba(220,38,38,.16); color: var(--red); padding: 2px 6px; border-radius: 7px; font-weight: 700; }}
+        .nav-card:hover {{
+            transform: translateY(-5px);
+            border-color: var(--accent);
+            box-shadow: 0 24px 48px rgba(0,0,0,.30), 0 0 0 1px var(--accent);
+        }}
+        .nav-card-icon {{
+            font-size: 2rem;
+            margin-bottom: 0.75rem;
+            display: block;
+        }}
+        .nav-card-label {{
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 0.2rem;
+        }}
+        .nav-card-title {{
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 0.4rem;
+        }}
+        .nav-card-desc {{
+            font-size: 0.82rem;
+            color: var(--muted);
+            line-height: 1.6;
+            flex: 1;
+        }}
+
+        @media (max-width: 768px) {{
+            .nav-card {{
+                height: auto;
+                min-height: 180px;
+                margin-bottom: 1rem;
+            }}
+        }}
+
+        /* ── Metric Cards ── */
+        .kpi-card {{
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.25rem;
+            box-shadow: var(--shadow);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            animation: fadeInUp 0.5s ease forwards;
+        }}
+        .kpi-card:hover {{
+            transform: translateY(-3px);
+        }}
+        .kpi-card.green {{ border-top: 3px solid var(--green); box-shadow: var(--shadow), 0 -2px 16px var(--glow-green); }}
+        .kpi-card.red   {{ border-top: 3px solid var(--red);   box-shadow: var(--shadow), 0 -2px 16px var(--glow-red);   }}
+        .kpi-card.blue  {{ border-top: 3px solid var(--blue);  box-shadow: var(--shadow), 0 -2px 16px var(--glow-blue);  }}
+        .kpi-card.accent{{ border-top: 3px solid var(--accent);box-shadow: var(--shadow), 0 -2px 16px var(--glow-accent);}}
+        .kpi-icon {{ font-size: 1.5rem; margin-bottom: 0.5rem; }}
+        .kpi-label {{ font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 0.25rem; }}
+        .kpi-value {{ font-family: 'Space Grotesk', sans-serif; font-size: 2rem; font-weight: 800; color: var(--text); line-height: 1; }}
+        .kpi-sub   {{ font-size: 0.75rem; color: var(--muted); margin-top: 0.25rem; }}
+
+        /* ── Model Info Card ── */
+        .model-card {{
+            background: linear-gradient(135deg, var(--panel) 0%, var(--panel-soft) 100%);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.1rem 1.4rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            box-shadow: var(--shadow);
+            margin-bottom: 1.25rem;
+        }}
+        .model-card-icon {{
+            width: 44px; height: 44px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.3rem;
+            box-shadow: 0 4px 16px var(--glow-accent);
+            flex-shrink: 0;
+        }}
+        .model-card-label {{ font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); }}
+        .model-card-title {{ font-family: 'Space Grotesk', sans-serif; font-size: 1rem; font-weight: 700; color: var(--text); margin: 2px 0; }}
+        .model-card-sub {{ font-size: 0.78rem; color: var(--muted); }}
+        .model-score-pill {{
+            margin-left: auto;
+            background: var(--panel-soft);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            padding: 5px 14px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--green);
+            white-space: nowrap;
+        }}
+
+        /* ── Sentiment Result Card ── */
+        .result-card {{
+            border-radius: 20px;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 0.5s ease forwards;
+        }}
+        .result-card.positive {{
+            background: linear-gradient(135deg, var(--panel) 0%, rgba(52,211,153,0.08) 100%);
+            border: 1px solid var(--green);
+            box-shadow: 0 20px 48px var(--glow-green), var(--shadow);
+        }}
+        .result-card.negative {{
+            background: linear-gradient(135deg, var(--panel) 0%, rgba(248,113,113,0.08) 100%);
+            border: 1px solid var(--red);
+            box-shadow: 0 20px 48px var(--glow-red), var(--shadow);
+        }}
+        .result-card.neutral {{
+            background: linear-gradient(135deg, var(--panel) 0%, rgba(96,165,250,0.08) 100%);
+            border: 1px solid var(--blue);
+            box-shadow: 0 20px 48px var(--glow-blue), var(--shadow);
+        }}
+        .result-card-top {{
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }}
+        .result-sentiment-emoji {{ font-size: 2.8rem; line-height: 1; }}
+        .result-label {{ font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.25rem; }}
+        .result-sentiment {{
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2.6rem;
+            font-weight: 800;
+            line-height: 1.05;
+            letter-spacing: -0.02em;
+        }}
+        .result-sentiment.positive {{ color: var(--green); text-shadow: 0 0 24px var(--glow-green); }}
+        .result-sentiment.negative {{ color: var(--red);   text-shadow: 0 0 24px var(--glow-red);   }}
+        .result-sentiment.neutral  {{ color: var(--blue);  text-shadow: 0 0 24px var(--glow-blue);  }}
+        .confidence-ring-wrap {{
+            text-align: center;
+        }}
+        .confidence-pct {{
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text);
+        }}
+        .confidence-sub {{
+            font-size: 0.7rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }}
+        .result-insight {{
+            font-size: 0.9rem;
+            color: var(--muted);
+            line-height: 1.7;
+            padding-top: 0.75rem;
+            border-top: 1px solid var(--border);
+        }}
+        .result-insight strong {{ color: var(--text); }}
+
+        /* ── Probability Bars ── */
+        @keyframes bar-grow {{
+            from {{ width: 0%; }}
+            to {{ width: var(--bar-w); }}
+        }}
+        .prob-row {{ margin: 0.8rem 0; }}
+        .prob-label {{ display:flex; justify-content:space-between; align-items:center; color:var(--text); font-size:0.88rem; font-weight:600; margin-bottom:0.4rem; }}
+        .prob-pct {{ font-family:'Space Grotesk',sans-serif; font-size:0.9rem; font-weight:700; }}
+        .prob-track {{ height: 10px; border-radius: 999px; background: var(--panel-soft); border: 1px solid var(--border); overflow: visible; position: relative; }}
+        .prob-fill {{
+            height: 100%;
+            border-radius: 999px;
+            animation: bar-grow 0.85s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            position: relative;
+        }}
+        .prob-fill.positive {{ background: linear-gradient(90deg, var(--green), rgba(52,211,153,0.6)); box-shadow: 0 0 12px var(--glow-green); }}
+        .prob-fill.negative {{ background: linear-gradient(90deg, var(--red), rgba(248,113,113,0.6));   box-shadow: 0 0 12px var(--glow-red);   }}
+        .prob-fill.neutral  {{ background: linear-gradient(90deg, var(--blue), rgba(96,165,250,0.6));   box-shadow: 0 0 12px var(--glow-blue);  }}
+        .prob-fill.top      {{ box-shadow: 0 0 18px currentColor; }}
+
+        /* ── Keyword Highlights ── */
+        .keyword-card {{
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.25rem;
+            line-height: 1.9;
+            font-size: 0.95rem;
+        }}
+        .highlight-pos {{ background: rgba(52,211,153,.18); color: var(--green); padding: 1px 7px; border-radius: 6px; font-weight: 700; }}
+        .highlight-neg {{ background: rgba(248,113,113,.18); color: var(--red);   padding: 1px 7px; border-radius: 6px; font-weight: 700; }}
         .highlight-neutral {{ color: var(--muted); }}
-        .prob-row {{ margin: .65rem 0; }}
-        .prob-label {{ display:flex; justify-content:space-between; color:var(--text); font-size:.92rem; margin-bottom:.3rem; }}
-        .prob-track {{ height: 9px; border-radius: 999px; background: var(--panel-soft); border: 1px solid var(--border); overflow: hidden; }}
-        .prob-fill {{ height: 100%; border-radius: 999px; }}
-        .badge {{ display:inline-block; padding:.2rem .55rem; border-radius:999px; font-weight:700; font-size:.82rem; }}
-        .badge-positive {{ color: var(--green); background: rgba(22,163,74,.12); border: 1px solid rgba(22,163,74,.30); }}
-        .badge-neutral {{ color: var(--blue); background: rgba(100,116,139,.14); border: 1px solid rgba(100,116,139,.32); }}
-        .badge-negative {{ color: var(--red); background: rgba(220,38,38,.12); border: 1px solid rgba(220,38,38,.30); }}
+
+        /* ── Badges ── */
+        .badge {{ display:inline-block; padding:.2rem .6rem; border-radius:999px; font-weight:700; font-size:.8rem; }}
+        .badge-positive {{ color: var(--green); background: rgba(52,211,153,.12); border: 1px solid rgba(52,211,153,.30); }}
+        .badge-neutral  {{ color: var(--blue);  background: rgba(96,165,250,.12);  border: 1px solid rgba(96,165,250,.30);  }}
+        .badge-negative {{ color: var(--red);   background: rgba(248,113,113,.12); border: 1px solid rgba(248,113,113,.30); }}
+
+        /* ── Misc UI ── */
+        .small-label {{ color: var(--muted); font-size: .82rem; }}
+        .big-value {{ font-family: 'Space Grotesk', sans-serif; font-size: 1.7rem; font-weight: 800; margin-top: .25rem; color: var(--text); }}
+        .insight-text {{ color: var(--muted); line-height: 1.7; font-size: 0.9rem; }}
+
+        /* ── Main Buttons ── */
         .stButton > button, .stDownloadButton > button {{
             background: linear-gradient(135deg, var(--accent), var(--accent-2)) !important;
-            color: white !important;
-            border: 1px solid rgba(255,255,255,.18) !important;
+            color: #FFFFFF !important;
+            border: 1px solid rgba(255, 255, 255, 0.25) !important;
             border-radius: 12px !important;
             font-weight: 700 !important;
-            padding: .65rem 1rem !important;
+            font-size: 0.95rem !important;
+            font-family: 'Inter', sans-serif !important;
+            padding: 0.7rem 1.4rem !important;
+            letter-spacing: 0.015em !important;
+            transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            box-shadow: 0 4px 16px var(--glow-accent) !important;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15) !important;
         }}
+
+        .stButton > button *, .stDownloadButton > button * {{
+            color: #FFFFFF !important;
+            fill: #FFFFFF !important;
+            font-weight: 700 !important;
+            font-size: 0.95rem !important;
+        }}
+
         .stButton > button:hover, .stDownloadButton > button:hover {{
-            border-color: var(--accent) !important;
-            filter: brightness(1.08);
+            filter: brightness(1.15) !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 8px 24px var(--glow-accent) !important;
+            border-color: rgba(255, 255, 255, 0.45) !important;
         }}
+
+        .stButton > button:hover *, .stDownloadButton > button:hover * {{
+            color: #FFFFFF !important;
+        }}
+
+        .stButton > button:active, .stDownloadButton > button:active {{
+            transform: translateY(0) !important;
+        }}
+
+        /* ── Sidebar Buttons Override ── */
+        [data-testid="stSidebar"] .stButton > button {{
+            background: var(--panel-soft) !important;
+            color: var(--text) !important;
+            border: 1px solid var(--border) !important;
+            box-shadow: none !important;
+            text-shadow: none !important;
+            font-weight: 600 !important;
+            text-align: left !important;
+            justify-content: flex-start !important;
+        }}
+
+        [data-testid="stSidebar"] .stButton > button * {{
+            color: var(--text) !important;
+            fill: var(--text) !important;
+            font-weight: 600 !important;
+            font-size: 0.88rem !important;
+        }}
+
+        [data-testid="stSidebar"] .stButton > button:hover {{
+            background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(168,85,247,0.15)) !important;
+            border-color: var(--accent) !important;
+        }}
+
+        [data-testid="stSidebar"] .stButton > button:hover * {{
+            color: var(--accent) !important;
+            fill: var(--accent) !important;
+        }}
+
+        /* ── Inputs ── */
         textarea, input, [data-baseweb="select"] > div {{
             background: var(--input-bg) !important;
             color: var(--text) !important;
             border-color: var(--border) !important;
+            border-radius: 10px !important;
+            font-family: 'Inter', sans-serif !important;
+        }}
+        textarea:focus, input:focus {{
+            border-color: var(--accent) !important;
+            box-shadow: 0 0 0 3px var(--glow-accent) !important;
         }}
         textarea::placeholder, input::placeholder {{ color: var(--muted) !important; opacity: 1 !important; }}
         textarea {{ caret-color: var(--accent) !important; }}
-        [data-testid="stDataFrame"] {{ border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }}
+
+        /* ── Dataframe ── */
+        [data-testid="stDataFrame"] {{ border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }}
+
+        /* ── Streamlit Metric (override for fallback) ── */
         [data-testid="stMetric"] {{
             background: var(--panel);
             border: 1px solid var(--border);
@@ -204,53 +681,42 @@ def load_css(theme_name):
             padding: .85rem;
             box-shadow: var(--shadow);
         }}
+
+        /* ── Alerts ── */
         [data-testid="stAlert"] {{
             border-radius: 12px;
             border: 1px solid var(--border);
+            font-family: 'Inter', sans-serif;
         }}
-        
-                /* File uploader main wrapper */
+
+        /* ── File Uploader ── */
         [data-testid="stFileUploader"] {{
             background: transparent !important;
             color: var(--text) !important;
         }}
-
         [data-testid="stFileUploader"] label,
         [data-testid="stFileUploader"] label p,
-        [data-testid="stFileUploader"] p {{
-            color: var(--text) !important;
-        }}
-
-        /* Dropzone before file is selected */
+        [data-testid="stFileUploader"] p {{ color: var(--text) !important; }}
         [data-testid="stFileUploaderDropzone"],
         [data-testid="stFileUploadDropzone"] {{
             background: var(--panel) !important;
             border: 2px dashed var(--border) !important;
-            border-radius: 14px !important;
+            border-radius: 16px !important;
             color: var(--text) !important;
+            transition: border-color 0.2s !important;
         }}
-
+        [data-testid="stFileUploaderDropzone"]:hover,
+        [data-testid="stFileUploadDropzone"]:hover {{ border-color: var(--accent) !important; }}
         [data-testid="stFileUploaderDropzone"] p,
         [data-testid="stFileUploaderDropzone"] span,
         [data-testid="stFileUploaderDropzone"] small,
         [data-testid="stFileUploadDropzone"] p,
         [data-testid="stFileUploadDropzone"] span,
-        [data-testid="stFileUploadDropzone"] small {{
-            color: var(--text) !important;
-        }}
-
+        [data-testid="stFileUploadDropzone"] small {{ color: var(--text) !important; }}
         [data-testid="stFileUploaderDropzone"] small,
-        [data-testid="stFileUploadDropzone"] small {{
-            color: var(--muted) !important;
-        }}
-
+        [data-testid="stFileUploadDropzone"] small {{ color: var(--muted) !important; }}
         [data-testid="stFileUploaderDropzone"] svg,
-        [data-testid="stFileUploadDropzone"] svg {{
-            color: var(--accent) !important;
-            fill: var(--accent) !important;
-        }}
-
-        /* Browse / upload button */
+        [data-testid="stFileUploadDropzone"] svg {{ color: var(--accent) !important; fill: var(--accent) !important; }}
         [data-testid="stFileUploaderDropzone"] button,
         [data-testid="stFileUploadDropzone"] button {{
             background: var(--panel-soft) !important;
@@ -259,42 +725,118 @@ def load_css(theme_name):
             border-radius: 10px !important;
             font-weight: 700 !important;
         }}
-
-        /* Uploaded file chip/card after CSV is selected */
         [data-testid="stFileUploaderFile"] {{
             background: var(--panel-soft) !important;
             border: 1px solid var(--border) !important;
             border-radius: 12px !important;
             color: var(--text) !important;
-            box-shadow: none !important;
         }}
-
-        /* Uploaded filename and file size */
         [data-testid="stFileUploaderFile"] div,
         [data-testid="stFileUploaderFile"] span,
         [data-testid="stFileUploaderFile"] p,
-        [data-testid="stFileUploaderFile"] small {{
-            color: var(--text) !important;
-        }}
-
-        [data-testid="stFileUploaderFile"] small {{
-            color: var(--muted) !important;
-        }}
-
-        /* File icon inside selected file chip */
-        [data-testid="stFileUploaderFile"] svg {{
-            color: var(--accent) !important;
-            fill: var(--accent) !important;
-        }}
-
-        /* Remove / close button on selected uploaded file */
+        [data-testid="stFileUploaderFile"] small {{ color: var(--text) !important; }}
+        [data-testid="stFileUploaderFile"] small {{ color: var(--muted) !important; }}
+        [data-testid="stFileUploaderFile"] svg {{ color: var(--accent) !important; fill: var(--accent) !important; }}
         [data-testid="stFileUploaderFile"] button,
         [data-testid="stFileUploaderDeleteBtn"] {{
             background: transparent !important;
             color: var(--accent) !important;
             border: 1px solid var(--accent) !important;
             border-radius: 999px !important;
-        }}    
+        }}
+
+        /* ── Sidebar Nav ── */
+        .sidebar-nav-item {{
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0.55rem 0.75rem;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.88rem;
+            color: var(--muted);
+            cursor: pointer;
+            transition: background 0.15s, color 0.15s;
+            border: none;
+            background: transparent;
+            width: 100%;
+            text-align: left;
+        }}
+        .sidebar-nav-item:hover {{
+            background: var(--panel-soft);
+            color: var(--text);
+        }}
+        .sidebar-nav-item.active {{
+            background: linear-gradient(135deg, rgba(129,140,248,0.15), rgba(167,139,250,0.10));
+            color: var(--accent);
+            border: 1px solid rgba(129,140,248,0.25);
+        }}
+        .sidebar-info-box {{
+            background: var(--panel-soft);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 0.75rem 1rem;
+            font-size: 0.78rem;
+            color: var(--muted);
+            line-height: 1.6;
+        }}
+
+        /* ── Timeline (About) ── */
+        .timeline {{
+            display: flex;
+            gap: 0;
+            position: relative;
+            margin: 1rem 0;
+        }}
+        .timeline-step {{
+            flex: 1;
+            position: relative;
+            text-align: center;
+            padding: 0 0.5rem;
+        }}
+        .timeline-step::before {{
+            content: '';
+            position: absolute;
+            top: 22px;
+            left: calc(50% + 22px);
+            right: calc(-50% + 22px);
+            height: 2px;
+            background: linear-gradient(to right, var(--accent), var(--border));
+        }}
+        .timeline-step:last-child::before {{ display: none; }}
+        .timeline-circle {{
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            margin: 0 auto 0.6rem;
+            box-shadow: 0 4px 16px var(--glow-accent);
+        }}
+        .timeline-title {{
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 0.2rem;
+        }}
+        .timeline-desc {{
+            font-size: 0.72rem;
+            color: var(--muted);
+            line-height: 1.5;
+        }}
+
+        /* ── Caption/Footnote ── */
+        .footnote {{ font-size: 0.75rem; color: var(--muted); margin-top: 0.4rem; }}
+
+        /* ── Scrollbar ── */
+        ::-webkit-scrollbar {{ width: 6px; height: 6px; }}
+        ::-webkit-scrollbar-track {{ background: var(--bg); }}
+        ::-webkit-scrollbar-thumb {{ background: var(--border); border-radius: 999px; }}
+        ::-webkit-scrollbar-thumb:hover {{ background: var(--accent); }}
         </style>
         """
     st.markdown(css, unsafe_allow_html=True)
@@ -311,6 +853,15 @@ def sentiment_class(sentiment):
     if "negative" in label:
         return "negative"
     return "neutral"
+
+
+def sentiment_emoji(sentiment):
+    label = safe_text(sentiment).lower()
+    if "positive" in label:
+        return "✅"
+    if "negative" in label:
+        return "❌"
+    return "➖"
 
 
 def format_confidence(value):
@@ -342,21 +893,6 @@ def sentiment_insight(sentiment):
         return "The feedback indicates frustration, dissatisfaction, or a potential customer issue."
     return "The feedback appears mostly informational, balanced, or without strong emotional tone."
 
-
-# def scroll_to_top():
-#     """Safely scroll the page to the top using multiple methods for compatibility."""
-#     st.markdown(
-#         """
-#         <script>
-#         try {{
-#             window.scrollTo({{ top: 0, behavior: 'instant' }});
-#         }} catch (e) {{
-#             window.scrollTo(0, 0);
-#         }}
-#         </script>
-#         """,
-#         unsafe_allow_html=True,
-#     )
 
 def scroll_to_top():
     """Scroll Streamlit page to the top after navigation."""
@@ -406,20 +942,29 @@ def scroll_to_top():
         height=0,
     )
 
+
 def render_probability_bars(probabilities):
+    max_key = max(probabilities, key=probabilities.get) if probabilities else None
     rows = [
-        ("Negative", probabilities.get("negative", 0.0), "var(--red)"),
-        ("Neutral", probabilities.get("neutral", 0.0), "var(--blue)"),
-        ("Positive", probabilities.get("positive", 0.0), "var(--green)"),
+        ("Negative", probabilities.get("negative", 0.0), "negative"),
+        ("Neutral",  probabilities.get("neutral",  0.0), "neutral"),
+        ("Positive", probabilities.get("positive", 0.0), "positive"),
     ]
     html_rows = []
-    for label, value, color in rows:
+    for label, value, cls in rows:
         width = max(0, min(float(value) * 100, 100))
+        top_cls = " top" if cls == max_key else ""
+        pct_text = probability_percent(value)
         html_rows.append(
             f"""
             <div class="prob-row">
-                <div class="prob-label"><span>{html.escape(label)}</span><span>{probability_percent(value)}</span></div>
-                <div class="prob-track"><div class="prob-fill" style="width:{width:.2f}%; background:{color};"></div></div>
+                <div class="prob-label">
+                    <span>{html.escape(label)}</span>
+                    <span class="prob-pct">{pct_text}</span>
+                </div>
+                <div class="prob-track">
+                    <div class="prob-fill {cls}{top_cls}" style="--bar-w:{width:.2f}%; width:{width:.2f}%;"></div>
+                </div>
             </div>
             """
         )
@@ -439,13 +984,14 @@ def clean_export_dataframe(results_dataframe):
     return results_dataframe[export_columns].copy()
 
 
-def render_card(label, value, subtitle=""):
+def render_kpi_card(icon, label, value, subtitle="", color="accent"):
     st.markdown(
         f"""
-        <div class="metric-card">
-            <div class="small-label">{html.escape(label)}</div>
-            <div class="big-value">{html.escape(str(value))}</div>
-            <div class="small-label">{html.escape(subtitle)}</div>
+        <div class="kpi-card {color}">
+            <div class="kpi-icon">{icon}</div>
+            <div class="kpi-label">{html.escape(label)}</div>
+            <div class="kpi-value">{html.escape(str(value))}</div>
+            <div class="kpi-sub">{html.escape(subtitle)}</div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -455,10 +1001,14 @@ def render_card(label, value, subtitle=""):
 def render_model_info_card():
     st.markdown(
         f"""
-        <div class="card">
-            <div class="small-label">AI Sentiment Engine</div>
-            <div class="big-value">{html.escape(MODEL_INFO_TITLE)}</div>
-            <p class="insight-text">This product uses a fine-tuned transformer sentiment model optimized for customer feedback, reviews, and social-style text.</p>
+        <div class="model-card">
+            <div class="model-card-icon">🤖</div>
+            <div>
+                <div class="model-card-label">AI Sentiment Engine</div>
+                <div class="model-card-title">Fine-tuned Twitter-RoBERTa</div>
+                <div class="model-card-sub">Optimized for customer feedback · Social-style text · Reviews</div>
+            </div>
+            <div class="model-score-pill">✦ 85.58% F1</div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -485,7 +1035,7 @@ def explain_keywords(text):
     tokens = re.findall(r"\b[a-zA-Z']+\b", safe_text(text).lower())
     positive = [word for word in tokens if word in POSITIVE_WORDS]
     negative = [word for word in tokens if word in NEGATIVE_WORDS]
-    neutral = [word for word in tokens if word not in POSITIVE_WORDS and word not in NEGATIVE_WORDS]
+    neutral  = [word for word in tokens if word not in POSITIVE_WORDS and word not in NEGATIVE_WORDS]
 
     highlighted = []
     for raw_word in safe_text(text).split():
@@ -542,7 +1092,7 @@ def run_batch(df, text_column):
                 "final_sentiment": prediction["sentiment"],
                 "confidence": prediction["confidence"],
                 "negative_probability": probabilities["negative"],
-                "neutral_probability": probabilities["neutral"],
+                "neutral_probability":  probabilities["neutral"],
                 "positive_probability": probabilities["positive"],
                 "highest_probability_category": highest_cat,
             }
@@ -561,44 +1111,32 @@ def style_chart(fig, theme="Dark Mode"):
         fig.update_layout(
             paper_bgcolor=palette["bg"],
             plot_bgcolor=palette["panel_soft"],
-            font=dict(color=palette["text"], size=11),
-            title=dict(font=dict(color=palette["text"], size=14)),
+            font=dict(family="Inter, sans-serif", color=palette["text"], size=11),
+            title=dict(font=dict(family="Space Grotesk, sans-serif", color=palette["text"], size=14)),
             legend=dict(font=dict(color=palette["text"], size=11)),
             margin=dict(l=20, r=20, t=55, b=20),
-        )
-        fig.update_xaxes(
-            gridcolor=palette["border"],
-            color=palette["text"],
-            tickfont=dict(color=palette["text"]),
-            title_font=dict(color=palette["text"]),
-        )
-        fig.update_yaxes(
-            gridcolor=palette["border"],
-            color=palette["text"],
-            tickfont=dict(color=palette["text"]),
-            title_font=dict(color=palette["text"]),
         )
     else:
         fig.update_layout(
             paper_bgcolor="#07111f",
             plot_bgcolor="#0f1b2d",
-            font=dict(color="#f8fafc", size=11),
-            title=dict(font=dict(color="#f8fafc", size=14)),
-            legend=dict(font=dict(color="#f8fafc", size=11)),
+            font=dict(family="Inter, sans-serif", color="#f0f6ff", size=11),
+            title=dict(font=dict(family="Space Grotesk, sans-serif", color="#f0f6ff", size=14)),
+            legend=dict(font=dict(color="#f0f6ff", size=11)),
             margin=dict(l=20, r=20, t=55, b=20),
         )
-        fig.update_xaxes(
-            gridcolor="#263a59",
-            color="#f8fafc",
-            tickfont=dict(color="#f8fafc"),
-            title_font=dict(color="#f8fafc"),
-        )
-        fig.update_yaxes(
-            gridcolor="#263a59",
-            color="#f8fafc",
-            tickfont=dict(color="#f8fafc"),
-            title_font=dict(color="#f8fafc"),
-        )
+    fig.update_xaxes(
+        gridcolor=palette["grid"],
+        color=palette["text"],
+        tickfont=dict(color=palette["text"]),
+        title_font=dict(color=palette["text"]),
+    )
+    fig.update_yaxes(
+        gridcolor=palette["grid"],
+        color=palette["text"],
+        tickfont=dict(color=palette["text"]),
+        title_font=dict(color=palette["text"]),
+    )
     return fig
 
 
@@ -608,60 +1146,156 @@ def sidebar():
         st.session_state.page = "Overview"
     if "next_page" in st.session_state:
         st.session_state.page = st.session_state.pop("next_page")
-    
-    st.sidebar.markdown("# 💬 SentiScope AI")
-    st.sidebar.caption(PRODUCT_POSITIONING)
-    
-    # Theme toggle - use initial value from session state
-    selected_theme = st.sidebar.radio(
-        "Theme", 
-        ["Light Mode", "Dark Mode"], 
-        index=0 if st.session_state.theme == "Light Mode" else 1
+
+    # ── Brand ──
+    st.sidebar.markdown(
+        """
+        <div class="sidebar-brand">
+            <div class="sidebar-logo-ring">💬</div>
+            <div>
+                <div class="sidebar-brand-name">SentiScope AI</div>
+                <div class="sidebar-brand-sub">Sentiment Analytics Studio</div>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
     )
-    # Only update if changed (to avoid unnecessary reloads)
+
+    # ── Engine status badge ──
+    st.sidebar.markdown(
+        '<div class="engine-badge"><div class="engine-badge-dot"></div>Engine Ready</div>',
+        unsafe_allow_html=True,
+    )
+
+    # ── Theme toggle ──
+    selected_theme = st.sidebar.radio(
+        "🎨 Theme",
+        ["Dark Mode", "Light Mode"],
+        index=0 if st.session_state.theme == "Dark Mode" else 1,
+    )
     if selected_theme != st.session_state.theme:
         st.session_state.theme = selected_theme
         st.rerun()
-    
-    # Navigation with proper state binding
-    selected = st.sidebar.radio("Navigation", pages, index=pages.index(st.session_state.page))
-    
-    # Only update state if selection actually changed (prevents double-click bug)
-    if selected != st.session_state.page:
-        st.session_state.page = selected
-        st.rerun()
-    
+
     st.sidebar.markdown("---")
-    st.sidebar.info("Analyze reviews, comments, support tickets, and survey feedback with a fine-tuned transformer sentiment engine.")
+
+    # ── Navigation ──
+    st.sidebar.markdown("**Navigate**")
+    for page_name in pages:
+        icon = PAGE_ICONS[page_name]
+        is_active = st.session_state.page == page_name
+        active_cls = "active" if is_active else ""
+        # Use actual Streamlit button per page for interactivity
+        if st.sidebar.button(
+            f"{icon}  {page_name}",
+            key=f"nav_{page_name}",
+            use_container_width=True,
+        ):
+            if st.session_state.page != page_name:
+                st.session_state.page = page_name
+                st.rerun()
+
+    st.sidebar.markdown("---")
+    st.sidebar.markdown(
+        """
+        <div class="sidebar-info-box">
+            🧠 Analyzes reviews, comments, support tickets, and survey feedback with a fine-tuned transformer sentiment engine.
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
     return st.session_state.page
 
 
 def overview_page():
+    # ── Animated Hero ──
     st.markdown(
         """
-            <div class="hero">
-                <div class="hero-title">SentiScope AI Studio</div>
-                <div class="subtitle">AI-powered customer feedback and review sentiment analytics studio for product teams, service teams, and small businesses.</div>
+        <div class="hero">
+            <div class="hero-eyebrow">✦ AI-Powered Analytics</div>
+            <div class="hero-title">
+                SentiScope <span class="accent-word">AI Studio</span>
             </div>
+            <div class="subtitle">
+                Transform unstructured customer feedback into actionable sentiment insights — instantly. Powered by a fine-tuned transformer model.
+            </div>
+            <div class="hero-stats">
+                <div class="hero-stat"><span class="hero-stat-icon">🎯</span><strong>3</strong>&nbsp;Sentiment Classes</div>
+                <div class="hero-stat"><span class="hero-stat-icon">⚡</span><strong>85.58%</strong>&nbsp;Balanced F1</div>
+                <div class="hero-stat"><span class="hero-stat-icon">🔄</span><strong>Single &amp; Batch</strong>&nbsp;Analysis</div>
+                <div class="hero-stat"><span class="hero-stat-icon">📤</span><strong>CSV</strong>&nbsp;Export Ready</div>
+            </div>
+        </div>
         """,
         unsafe_allow_html=True,
     )
+
+    # ── Feature Navigation Cards ──
+    st.markdown('<div class="section-title">🚀 Get Started</div>', unsafe_allow_html=True)
     c1, c2, c3 = st.columns(3)
+
     with c1:
-        render_card("Analyze", "Single Text", "Test a review, tweet, or support comment instantly.")
+        st.markdown(
+            """
+            <div class="nav-card">
+                <span class="nav-card-icon">🔍</span>
+                <div class="nav-card-label">Single Analysis</div>
+                <div class="nav-card-title">Analyze Text</div>
+                <div class="nav-card-desc">Paste any review, tweet, or support message and get instant sentiment with confidence score and keyword explanation.</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        if st.button("→ Go to Analyze Text", key="cta_analyze", use_container_width=True):
+            st.session_state.page = "Analyze Text"
+            st.rerun()
+
     with c2:
-        render_card("Process", "Batch CSV", "Upload feedback datasets and generate predictions.")
+        st.markdown(
+            """
+            <div class="nav-card">
+                <span class="nav-card-icon">📊</span>
+                <div class="nav-card-label">Batch Processing</div>
+                <div class="nav-card-title">Batch Analysis</div>
+                <div class="nav-card-desc">Upload a CSV file of customer feedback and generate sentiment predictions across the entire dataset at once.</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        if st.button("→ Go to Batch Analysis", key="cta_batch", use_container_width=True):
+            st.session_state.page = "Batch Analysis"
+            st.rerun()
+
     with c3:
-        render_card("Understand", "Dashboard", "Explore sentiment trends and confidence insights.")
+        st.markdown(
+            """
+            <div class="nav-card">
+                <span class="nav-card-icon">📈</span>
+                <div class="nav-card-label">Insights & Trends</div>
+                <div class="nav-card-title">Insights Dashboard</div>
+                <div class="nav-card-desc">Explore sentiment trends, KPI metrics, distribution charts, and confidence histograms from your analyzed feedback.</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        if st.button("→ View Dashboard", key="cta_dashboard", use_container_width=True):
+            st.session_state.page = "Insights Dashboard"
+            st.rerun()
 
     st.markdown('<div class="section-spacer"></div>', unsafe_allow_html=True)
     render_model_info_card()
 
-    st.markdown('<div class="section-title">What This Product Does</div>', unsafe_allow_html=True)
+    # ── What it does ──
+    st.markdown('<div class="section-title">💡 What This Product Does</div>', unsafe_allow_html=True)
     st.markdown(
         """
         <div class="card">
-        SentiScope AI turns unstructured customer feedback into sentiment insights. It supports fast single-text analysis, CSV-based batch processing, keyword-level explanations, and downloadable results for client reporting or internal decision-making.
+            <p class="insight-text">
+                SentiScope AI turns unstructured customer feedback into sentiment insights. It supports fast single-text analysis,
+                CSV-based batch processing, keyword-level explanations, and downloadable results for client reporting or internal
+                decision-making. The AI engine is optimized for real-world customer language — not just formal reviews.
+            </p>
         </div>
         """,
         unsafe_allow_html=True,
@@ -669,15 +1303,18 @@ def overview_page():
 
 
 def single_analysis_page():
-    st.markdown('<div class="section-title">Analyze Text</div>', unsafe_allow_html=True)
-    st.caption("Analyze a single customer review, comment, tweet, or support message.")
+    st.markdown('<div class="section-title">🔍 Analyze Text</div>', unsafe_allow_html=True)
+    st.markdown('<p class="insight-text">Analyze a single customer review, comment, tweet, or support message.</p>', unsafe_allow_html=True)
     render_model_info_card()
 
     st.markdown('<div class="section-spacer"></div>', unsafe_allow_html=True)
+
+    # ── Sample buttons ──
+    st.markdown("**Try a sample:**")
     cols = st.columns(4)
     for idx, (label, text) in enumerate(SAMPLE_TEXTS.items()):
         with cols[idx]:
-            if st.button(label):
+            if st.button(label, key=f"sample_{idx}"):
                 st.session_state.single_text = text
 
     user_text = st.text_area(
@@ -687,7 +1324,7 @@ def single_analysis_page():
         placeholder="Enter a product review, app comment, survey response, or support message...",
     )
 
-    if st.button("Analyze Sentiment"):
+    if st.button("⚡ Analyze Sentiment", use_container_width=True):
         if not user_text.strip():
             st.info("Enter a review, comment, or feedback message to analyze.")
             return
@@ -704,34 +1341,55 @@ def single_analysis_page():
 
         sentiment = prediction["sentiment"]
         card_class = sentiment_class(sentiment)
+        emoji = sentiment_emoji(sentiment)
+        conf_pct = f"{float(prediction['confidence']) * 100:.1f}%"
+        proc_ms = f"{prediction['processing_time'] * 1000:.0f}ms"
+
+        # ── Premium result card ──
         st.markdown(
             f"""
-            <div class="card {card_class}">
-                <div class="small-label">Final Sentiment</div>
-                <div class="big-value">{html.escape(sentiment)}</div>
-                <p>Confidence: <strong>{format_confidence(prediction['confidence'])}</strong></p>
-                <p class="insight-text"><strong>Insight:</strong> {sentiment_insight(sentiment)}</p>
+            <div class="result-card {card_class}">
+                <div class="result-card-top">
+                    <div>
+                        <div class="result-label">Final Sentiment</div>
+                        <div class="result-sentiment {card_class}">{emoji} {html.escape(sentiment)}</div>
+                    </div>
+                    <div class="confidence-ring-wrap">
+                        <div class="confidence-pct">{conf_pct}</div>
+                        <div class="confidence-sub">Confidence</div>
+                    </div>
+                </div>
+                <div class="result-insight">
+                    <strong>Insight:</strong> {sentiment_insight(sentiment)}
+                    <br><span class="footnote">⏱ Processed in {proc_ms} · Model: {html.escape(safe_text(prediction.get("engine", ""))[:60])}</span>
+                </div>
             </div>
             """,
             unsafe_allow_html=True,
         )
 
-        st.markdown('<div class="section-title">Probability Breakdown</div>', unsafe_allow_html=True)
+        # ── Probability bars ──
+        st.markdown('<div class="section-title">📊 Probability Breakdown</div>', unsafe_allow_html=True)
         render_probability_bars(prediction["probabilities"])
 
-        st.markdown('<div class="section-title">Keyword-Level Explanation</div>', unsafe_allow_html=True)
+        # ── Keyword explanation ──
+        st.markdown('<div class="section-title">🔤 Keyword-Level Explanation</div>', unsafe_allow_html=True)
         highlighted, positive, negative, neutral = explain_keywords(user_text)
-        st.markdown(f'<div class="card">{highlighted}</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="keyword-card">{highlighted}</div>', unsafe_allow_html=True)
+
         k1, k2, k3 = st.columns(3)
-        k1.info("Positive keywords: " + (", ".join(sorted(set(positive))) if positive else "None found"))
-        k2.error("Negative keywords: " + (", ".join(sorted(set(negative))) if negative else "None found"))
-        k3.warning("Neutral words: " + str(len(neutral)))
-        st.caption("Keywords provide context clues. The final prediction is generated by the AI sentiment engine, not keyword matching alone.")
+        k1.success("✅ Positive: " + (", ".join(sorted(set(positive))) if positive else "None found"))
+        k2.error("❌ Negative: " + (", ".join(sorted(set(negative))) if negative else "None found"))
+        k3.info(f"➖ Neutral words: {len(neutral)}")
+        st.markdown(
+            '<p class="footnote">Keywords provide context clues. The final prediction is generated by the AI sentiment engine, not keyword matching alone.</p>',
+            unsafe_allow_html=True,
+        )
 
 
 def batch_page():
-    st.markdown('<div class="section-title">Batch Analysis</div>', unsafe_allow_html=True)
-    st.caption("Upload CSV feedback, including Xquik exports with tweet_text or full_text columns.")
+    st.markdown('<div class="section-title">📊 Batch Analysis</div>', unsafe_allow_html=True)
+    st.markdown('<p class="insight-text">Upload CSV feedback to analyze sentiment at scale. Supports Xquik exports with tweet_text or full_text columns.</p>', unsafe_allow_html=True)
     render_model_info_card()
 
     uploaded = st.file_uploader("Upload CSV", type=["csv"])
@@ -755,30 +1413,34 @@ def batch_page():
         return
 
     st.markdown("**Select the column that contains the review, comment, tweet, or feedback text you want to analyze.**")
-    
-    # Auto-detected or user selection
+
     if len(text_columns) == 1:
         selected_column = text_columns[0]
         st.success(f"✓ Auto-detected text column: **{selected_column}**")
     else:
         selected_column = st.selectbox("Text column", text_columns, help="Choose the column with customer feedback text.")
-    
-    # Show preview of selected column
+
     st.markdown("**Preview of selected text column:**")
     sample_texts = df[selected_column].dropna().head(3).values
     for i, sample in enumerate(sample_texts, 1):
         st.caption(f"Sample {i}: {safe_text(sample)[:100]}…" if len(safe_text(sample)) > 100 else f"Sample {i}: {sample}")
 
     blank_text_count = int(df[selected_column].fillna("").astype(str).str.strip().eq("").sum())
-    c1, c2, c3 = st.columns(3)
-    c1.metric("Total Rows", len(df))
-    c2.metric("Blank Text", blank_text_count)
-    c3.metric("Columns", len(df.columns))
 
+    # ── KPI metrics ──
+    c1, c2, c3 = st.columns(3)
+    with c1:
+        render_kpi_card("📄", "Total Rows", len(df), "records in file", "accent")
+    with c2:
+        render_kpi_card("⬜", "Blank Text", blank_text_count, "will be skipped", "blue")
+    with c3:
+        render_kpi_card("🗂️", "Columns", len(df.columns), "in dataset", "accent")
+
+    st.markdown('<div class="section-spacer"></div>', unsafe_allow_html=True)
     st.markdown("**Dataset Preview**")
     st.dataframe(df.head(8), use_container_width=True)
 
-    if st.button("Run Feedback Sentiment Analysis"):
+    if st.button("⚡ Run Feedback Sentiment Analysis", use_container_width=True):
         clean_df = non_empty_text_rows(df, selected_column)
         if clean_df.empty:
             st.warning("No feedback text rows found after removing blank values.")
@@ -790,16 +1452,14 @@ def batch_page():
 
     results = st.session_state.get("batch_results")
     if results is not None and not results.empty:
-        st.markdown('<div class="section-title">Prediction Results</div>', unsafe_allow_html=True)
-        
-        # Display with badge for highest probability category
+        st.markdown('<div class="section-title">📋 Prediction Results</div>', unsafe_allow_html=True)
+
         display_results = results.copy()
         display_results.columns = [
             "Text", "Sentiment", "Confidence", "Negative %", "Neutral %", "Positive %", "Category"
         ]
         st.dataframe(display_results, use_container_width=True)
-        
-        # Download clean CSV
+
         export_df = clean_export_dataframe(results)
         st.download_button(
             "⬇ Download Results CSV",
@@ -807,113 +1467,189 @@ def batch_page():
             file_name="sentiscope_analysis_results.csv",
             mime="text/csv",
         )
-        if st.button("View Insights Dashboard"):
+        if st.button("📈 View Insights Dashboard", use_container_width=True):
             st.session_state.next_page = "Insights Dashboard"
             st.session_state.scroll_to_top = True
             st.rerun()
 
 
 def analytics_page():
-    # Scroll to top if navigated from batch page
     if st.session_state.get("scroll_to_top"):
         scroll_to_top()
         st.session_state.scroll_to_top = False
-    
-    st.markdown('<div class="section-title">Customer Sentiment Overview</div>', unsafe_allow_html=True)
+
+    st.markdown('<div class="section-title">📈 Customer Sentiment Overview</div>', unsafe_allow_html=True)
     render_model_info_card()
-    
+
     results = st.session_state.get("batch_results")
     if results is None or results.empty:
         st.info("No analyzed feedback results found yet. Upload a CSV in Batch Analysis and run sentiment analysis to see dashboard insights.")
         return
 
-    # Recalculate using the new column names from run_batch
     sentiment_counts = results["final_sentiment"].value_counts()
     avg_conf = results["confidence"].mean()
     most_common = sentiment_counts.idxmax() if not sentiment_counts.empty else "N/A"
-    
-    total_feedback = len(results)
-    positive_count = int(sentiment_counts.get("Positive", 0))
-    neutral_count = int(sentiment_counts.get("Neutral", 0))
-    negative_count = int(sentiment_counts.get("Negative", 0))
 
-    # KPI Cards
+    total_feedback   = len(results)
+    positive_count   = int(sentiment_counts.get("Positive", 0))
+    neutral_count    = int(sentiment_counts.get("Neutral", 0))
+    negative_count   = int(sentiment_counts.get("Negative", 0))
+
+    # ── KPI Cards row 1 ──
     k1, k2, k3, k4 = st.columns(4)
-    k1.metric("Total Feedback Analyzed", total_feedback)
-    k2.metric("Positive Feedback", positive_count)
-    k3.metric("Neutral Feedback", neutral_count)
-    k4.metric("Negative Feedback", negative_count)
-    
-    k5, k6 = st.columns(2)
-    k5.metric("Average Confidence", format_confidence(avg_conf))
-    k6.metric("Dominant Sentiment", most_common)
+    with k1:
+        render_kpi_card("📋", "Total Analyzed", total_feedback, "feedback records", "accent")
+    with k2:
+        render_kpi_card("✅", "Positive", positive_count, f"{positive_count/total_feedback*100:.0f}% of total" if total_feedback else "", "green")
+    with k3:
+        render_kpi_card("➖", "Neutral", neutral_count, f"{neutral_count/total_feedback*100:.0f}% of total" if total_feedback else "", "blue")
+    with k4:
+        render_kpi_card("❌", "Negative", negative_count, f"{negative_count/total_feedback*100:.0f}% of total" if total_feedback else "", "red")
 
-    # Charts
-    st.markdown('<div class="section-title">Feedback Mood Breakdown</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-spacer"></div>', unsafe_allow_html=True)
+
+    # ── KPI Cards row 2 ──
+    k5, k6 = st.columns(2)
+    with k5:
+        render_kpi_card("🎯", "Avg Confidence", format_confidence(avg_conf), "across all predictions", "accent")
+    with k6:
+        dominant_emoji = sentiment_emoji(most_common)
+        render_kpi_card(dominant_emoji, "Dominant Sentiment", most_common, "most frequent class", "accent")
+
+    theme = st.session_state.get("theme", "Dark Mode")
+    colors = {"Positive": "#34d399", "Negative": "#f87171", "Neutral": "#60a5fa"}
     chart_df = sentiment_counts.reset_index()
     chart_df.columns = ["Sentiment", "Count"]
-    colors = {"Positive": "#22c55e", "Negative": "#ef4444", "Neutral": "#60a5fa"}
-    
-    theme = st.session_state.get("theme", "Dark Mode")
 
+    # ── Charts ──
+    st.markdown('<div class="section-title">🥧 Feedback Mood Breakdown</div>', unsafe_allow_html=True)
     c1, c2 = st.columns(2)
     with c1:
-        fig = px.pie(chart_df, names="Sentiment", values="Count", title="Sentiment Distribution", color="Sentiment", color_discrete_map=colors)
+        fig = px.pie(
+            chart_df, names="Sentiment", values="Count",
+            title="Sentiment Distribution",
+            color="Sentiment", color_discrete_map=colors,
+            hole=0.45,
+        )
         fig.update_traces(textposition="inside", textinfo="percent+label")
         st.plotly_chart(style_chart(fig, theme), use_container_width=True)
     with c2:
-        fig = px.bar(chart_df, x="Sentiment", y="Count", title="Sentiment Counts", color="Sentiment", color_discrete_map=colors, text="Count")
+        fig = px.bar(
+            chart_df, x="Sentiment", y="Count",
+            title="Sentiment Counts",
+            color="Sentiment", color_discrete_map=colors, text="Count",
+        )
+        fig.update_traces(marker_line_width=0, textposition="outside")
         st.plotly_chart(style_chart(fig, theme), use_container_width=True)
 
-    st.markdown('<div class="section-title">Confidence Distribution</div>', unsafe_allow_html=True)
-    fig = px.histogram(results, x="confidence", nbins=12, title="Model Confidence Scores", color="final_sentiment", color_discrete_map=colors)
+    st.markdown('<div class="section-title">📉 Confidence Distribution</div>', unsafe_allow_html=True)
+    fig = px.histogram(
+        results, x="confidence", nbins=12,
+        title="Model Confidence Scores",
+        color="final_sentiment", color_discrete_map=colors,
+    )
     fig.update_xaxes(tickformat=".0%", title="Confidence")
     st.plotly_chart(style_chart(fig, theme), use_container_width=True)
 
-    st.markdown('<div class="section-title">Key Sentiment Insights</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">🔎 Key Sentiment Insights</div>', unsafe_allow_html=True)
     st.dataframe(results.head(25), use_container_width=True)
 
 
 def about_page():
-    st.markdown('<div class="section-title">About SentiScope AI Studio</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">ℹ️ About SentiScope AI Studio</div>', unsafe_allow_html=True)
     st.markdown(
         """
         <div class="card">
-        SentiScope AI Studio is a client-ready sentiment analytics dashboard for customer feedback. It helps teams understand how users feel about products, services, and support experiences. Upload reviews, comments, or survey responses, and get instant sentiment insights with exportable results for business reporting.
+            <p class="insight-text">
+                SentiScope AI Studio is a client-ready sentiment analytics dashboard for customer feedback. It helps teams understand how users
+                feel about products, services, and support experiences. Upload reviews, comments, or survey responses, and get instant sentiment
+                insights with exportable results for business reporting.
+            </p>
         </div>
         """,
         unsafe_allow_html=True,
     )
-    
+
+    st.markdown('<div class="section-spacer"></div>', unsafe_allow_html=True)
     render_model_info_card()
-    
-    st.markdown('<div class="section-title">Technical Details</div>', unsafe_allow_html=True)
+
+    st.markdown('<div class="section-title">⚙️ Technical Details</div>', unsafe_allow_html=True)
+    t1, t2 = st.columns(2)
+    with t1:
+        st.markdown(
+            """
+            <div class="card">
+                <div class="small-label">Model Architecture</div>
+                <div class="big-value" style="font-size:1.1rem;">Twitter-RoBERTa</div>
+                <p class="insight-text">Fine-tuned transformer model, optimized for customer feedback, reviews, and social-style text. Falls back to <code>cardiffnlp/twitter-roberta-base-sentiment-latest</code> if local model is unavailable.</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+    with t2:
+        st.markdown(
+            """
+            <div class="card">
+                <div class="small-label">Balanced Quality Score (Macro F1)</div>
+                <div class="big-value" style="color:var(--green);">85.58%</div>
+                <p class="insight-text">Measures consistent performance across Positive, Neutral, and Negative classes equally. Evaluated on a held-out test set.</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
     st.markdown(
         """
-        <div class="card">
-        <div class="small-label">AI Sentiment Engine</div>
-        <p>Fine-tuned Twitter-RoBERTa sentiment transformer, optimized for customer feedback, reviews, and social-style text.</p>
+        <div class="card" style="margin-top:0.75rem;">
+            <div class="small-label" style="margin-bottom:0.5rem;">Performance Metrics</div>
+            <table style="width:100%;border-collapse:collapse;font-size:0.88rem;">
+                <thead>
+                    <tr style="border-bottom:1px solid var(--border);">
+                        <th style="text-align:left;padding:0.5rem 0.75rem;color:var(--muted);font-weight:600;">Metric</th>
+                        <th style="text-align:right;padding:0.5rem 0.75rem;color:var(--muted);font-weight:600;">Score</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td style="padding:0.45rem 0.75rem;">Accuracy</td><td style="text-align:right;padding:0.45rem 0.75rem;font-weight:700;">85.53%</td></tr>
+                    <tr style="background:var(--panel-soft);"><td style="padding:0.45rem 0.75rem;border-radius:6px 0 0 6px;">Macro Precision</td><td style="text-align:right;padding:0.45rem 0.75rem;border-radius:0 6px 6px 0;font-weight:700;">85.88%</td></tr>
+                    <tr><td style="padding:0.45rem 0.75rem;">Macro Recall</td><td style="text-align:right;padding:0.45rem 0.75rem;font-weight:700;">85.53%</td></tr>
+                    <tr style="background:var(--panel-soft);"><td style="padding:0.45rem 0.75rem;border-radius:6px 0 0 6px;color:var(--green);font-weight:700;">Balanced Quality (F1)</td><td style="text-align:right;padding:0.45rem 0.75rem;border-radius:0 6px 6px 0;color:var(--green);font-weight:800;">85.58%</td></tr>
+                </tbody>
+            </table>
         </div>
         """,
         unsafe_allow_html=True,
     )
-    
-    st.markdown('<div class="section-title">Balanced Quality Score</div>', unsafe_allow_html=True)
+
+    # ── Workflow Timeline ──
+    st.markdown('<div class="section-title">🗺️ Recommended Workflow</div>', unsafe_allow_html=True)
     st.markdown(
         """
-        <div class="card">
-        <div class="big-value">85.58%</div>
-        <p class="insight-text">This score measures model performance across Positive, Neutral, and Negative sentiment classes equally. It is based on macro F1, a standard machine learning metric that treats all classes fairly. This score was measured on a held-out test set from the training dataset.</p>
+        <div class="timeline">
+            <div class="timeline-step">
+                <div class="timeline-circle">🔍</div>
+                <div class="timeline-title">Test Single Examples</div>
+                <div class="timeline-desc">Use Analyze Text with real feedback to understand model behavior</div>
+            </div>
+            <div class="timeline-step">
+                <div class="timeline-circle">📊</div>
+                <div class="timeline-title">Upload CSV Feedback</div>
+                <div class="timeline-desc">Batch analyze reviews, comments, or support tickets at scale</div>
+            </div>
+            <div class="timeline-step">
+                <div class="timeline-circle">📈</div>
+                <div class="timeline-title">Review Dashboard</div>
+                <div class="timeline-desc">Explore KPIs, sentiment charts, and confidence distributions</div>
+            </div>
+            <div class="timeline-step">
+                <div class="timeline-circle">📤</div>
+                <div class="timeline-title">Export Results</div>
+                <div class="timeline-desc">Download clean CSV for client reports or business reviews</div>
+            </div>
         </div>
         """,
         unsafe_allow_html=True,
     )
-    
-    st.markdown('<div class="section-title">Recommended Workflow</div>', unsafe_allow_html=True)
-    st.markdown("1. **Test single examples** in the Analyze Text page with real feedback")
-    st.markdown("2. **Upload CSV feedback** in Batch Analysis with customer reviews or support comments")
-    st.markdown("3. **Review KPIs and charts** in Insights Dashboard to understand sentiment trends")
-    st.markdown("4. **Download results** for client reports, dashboards, or business review")
 
 
 def main():

@@ -43,13 +43,14 @@ def load_model():
 
     try:
         tokenizer = AutoTokenizer.from_pretrained(model_source)
-        model = AutoModelForSequenceClassification.from_pretrained(model_source)
+        try:
+            model = AutoModelForSequenceClassification.from_pretrained(model_source, use_safetensors=True)
+        except Exception:
+            model = AutoModelForSequenceClassification.from_pretrained(model_source)
         model.eval()
     except Exception as error:
         raise RuntimeError(
-            "Could not load the sentiment model. If the local fine-tuned model is "
-            "missing or incomplete, remove models/sentiment-transformer and retry "
-            "so the app can fall back to the base Hugging Face model."
+            f"Could not load sentiment model ({error}). If using local model, check models/sentiment-transformer."
         ) from error
 
     display_name = LOCAL_MODEL_DISPLAY_NAME if local_model_available() else BASE_MODEL_DISPLAY_NAME
