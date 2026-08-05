@@ -134,14 +134,21 @@ def load_css(theme_name):
             --glow-accent: {palette["glow_accent"]};
         }}
 
-        /* ── Base ── */
+        /* ── Base & Fluid Layout Constraints ── */
         *, *::before, *::after {{ box-sizing: border-box; }}
         html, body, .stApp {{
             font-family: 'Inter', 'Segoe UI', system-ui, sans-serif !important;
+            overflow-x: hidden !important;
         }}
         .stApp, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {{
             background: var(--bg) !important;
             color: var(--text) !important;
+        }}
+        [data-testid="stMain"] > div {{
+            max-width: 1440px !important;
+            margin-left: auto !important;
+            margin-right: auto !important;
+            padding-bottom: env(safe-area-inset-bottom, 1.5rem) !important;
         }}
         [data-testid="stSidebar"] {{
             background: var(--sidebar) !important;
@@ -154,6 +161,67 @@ def load_css(theme_name):
         }}
         p, li, label, span, div, caption {{
             color: var(--text);
+        }}
+
+        /* ── Mobile Sidebar Menu Toggle Button (Header / Collapsed Control) ── */
+        [data-testid="stHeader"] {{
+            background: transparent !important;
+            z-index: 99999 !important;
+        }}
+        [data-testid="collapsedControl"],
+        [data-testid="stSidebarCollapseButton"],
+        [data-testid="stHeader"] button,
+        [data-testid="stSidebarToggle"],
+        button[kind="header"] {{
+            background: linear-gradient(135deg, var(--accent), var(--accent-2)) !important;
+            color: #FFFFFF !important;
+            border: 1px solid rgba(255, 255, 255, 0.3) !important;
+            border-radius: 12px !important;
+            min-width: 44px !important;
+            min-height: 44px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            box-shadow: 0 4px 14px var(--glow-accent) !important;
+            margin: 0.5rem !important;
+            transition: all 0.22s ease !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+        }}
+        [data-testid="collapsedControl"] *,
+        [data-testid="stSidebarCollapseButton"] *,
+        [data-testid="stHeader"] button *,
+        [data-testid="stSidebarToggle"] *,
+        button[kind="header"] * {{
+            fill: #FFFFFF !important;
+            stroke: #FFFFFF !important;
+            color: #FFFFFF !important;
+        }}
+        [data-testid="collapsedControl"] svg,
+        [data-testid="stSidebarCollapseButton"] svg,
+        [data-testid="stHeader"] button svg,
+        [data-testid="stSidebarToggle"] svg,
+        button[kind="header"] svg {{
+            width: 22px !important;
+            height: 22px !important;
+        }}
+        [data-testid="collapsedControl"]:hover,
+        [data-testid="stSidebarCollapseButton"]:hover,
+        [data-testid="stHeader"] button:hover {{
+            filter: brightness(1.15) !important;
+            transform: scale(1.05) !important;
+            box-shadow: 0 6px 18px var(--glow-accent) !important;
+            border-color: rgba(255, 255, 255, 0.5) !important;
+        }}
+
+        /* ── Safe Area Insets for Mobile / Modern Devices ── */
+        @supports (padding: env(safe-area-inset-top)) {{
+            [data-testid="stAppViewContainer"] {{
+                padding-top: env(safe-area-inset-top, 0px) !important;
+                padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+                padding-left: env(safe-area-inset-left, 0px) !important;
+                padding-right: env(safe-area-inset-right, 0px) !important;
+            }}
         }}
 
         /* ── Sidebar Brand ── */
@@ -214,7 +282,7 @@ def load_css(theme_name):
             50% {{ opacity: 0.6; transform: scale(0.8); }}
         }}
 
-        /* ── Hero ── */
+        /* ── Fluid Hero ── */
         @keyframes hero-shimmer {{
             0% {{ background-position: 0% 50%; }}
             50% {{ background-position: 100% 50%; }}
@@ -229,7 +297,7 @@ def load_css(theme_name):
             to {{ opacity: 1; }}
         }}
         .hero {{
-            padding: 2.5rem 2.5rem;
+            padding: clamp(1.5rem, 4vw, 2.5rem);
             border: 1px solid var(--border);
             border-radius: 24px;
             background: {palette["hero_grad"]};
@@ -273,7 +341,7 @@ def load_css(theme_name):
         }}
         .hero-title {{
             font-family: 'Space Grotesk', sans-serif;
-            font-size: 3.2rem;
+            font-size: clamp(2rem, 5vw, 3.2rem) !important;
             font-weight: 800;
             letter-spacing: -0.03em;
             line-height: 1.1;
@@ -333,17 +401,19 @@ def load_css(theme_name):
         }}
         .section-spacer {{ height: 1.25rem; }}
 
-        /* ── Cards ── */
+        /* ── Cards (Mobile-First Controlled Sizing & Fluid Padding) ── */
         .card {{
             background: var(--panel);
             border: 1px solid var(--border);
             border-radius: 18px;
-            padding: 1.4rem;
+            padding: clamp(1rem, 3vw, 1.4rem); /* Adaptive internal padding across viewports */
             box-shadow: var(--shadow);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             transition: box-shadow 0.25s ease, transform 0.25s ease, border-color 0.25s ease;
             animation: fadeInUp 0.45s ease forwards;
+            width: 100%; /* Ensures card fills parent container smoothly */
+            max-width: 100%; /* Prevents card overflow on mobile */
         }}
         .card:hover {{
             transform: translateY(-2px);
@@ -363,23 +433,25 @@ def load_css(theme_name):
             box-shadow: var(--shadow), -2px 0 20px var(--glow-blue);
         }}
 
-        /* ── Nav Feature Cards ── */
+        /* ── Nav Feature Cards (Mobile-First Strict Sizing & Anti-Cropping) ── */
         .nav-card {{
             background: var(--panel);
             border: 1px solid var(--border);
             border-radius: 18px;
-            padding: 1.5rem;
+            padding: clamp(1rem, 2.5vw, 1.4rem); /* Adaptive spacing prevents text clipping */
             box-shadow: var(--shadow);
             transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
             text-align: left;
-            width: 100%;
-            height: 220px;
+            width: 100%; /* Prevents card squishing on mobile */
+            min-width: 0; /* Ensures flex container child text truncation doesn't break layout */
+            min-height: 220px; /* Fluid minimum height prevents text cropping on 1024px tablet screens */
+            height: 100%; /* Dynamic height matching across multi-column layout */
             display: flex;
             flex-direction: column;
             justify-content: flex-start;
-            margin-bottom: 1.25rem;
+            margin-bottom: clamp(0.85rem, 2vw, 1.25rem); /* Space between card and CTA button below */
             position: relative;
-            overflow: hidden;
+            overflow: visible; /* Prevents text from getting cut off at bottom of card */
         }}
         .nav-card:hover {{
             transform: translateY(-5px);
@@ -387,12 +459,12 @@ def load_css(theme_name):
             box-shadow: 0 24px 48px rgba(0,0,0,.30), 0 0 0 1px var(--accent);
         }}
         .nav-card-icon {{
-            font-size: 2rem;
-            margin-bottom: 0.75rem;
+            font-size: clamp(1.5rem, 3vw, 2rem); /* Dynamic scaling for card icon */
+            margin-bottom: 0.6rem;
             display: block;
         }}
         .nav-card-label {{
-            font-size: 0.72rem;
+            font-size: clamp(0.68rem, 1.8vw, 0.72rem);
             font-weight: 700;
             letter-spacing: 0.1em;
             text-transform: uppercase;
@@ -401,35 +473,51 @@ def load_css(theme_name):
         }}
         .nav-card-title {{
             font-family: 'Space Grotesk', sans-serif;
-            font-size: 1.15rem;
+            font-size: clamp(1rem, 2.2vw, 1.15rem); /* Fluid title scaling */
             font-weight: 700;
             color: var(--text);
             margin-bottom: 0.4rem;
         }}
         .nav-card-desc {{
-            font-size: 0.82rem;
+            font-size: clamp(0.78rem, 1.8vw, 0.82rem);
             color: var(--muted);
-            line-height: 1.6;
+            line-height: 1.55;
             flex: 1;
+        }}
+
+        @media (max-width: 1150px) {{
+            .nav-card {{
+                min-height: 210px !important;
+                padding: 1.1rem 1rem !important;
+                margin-bottom: 0.85rem !important;
+            }}
+            .nav-card-title {{
+                font-size: 1.05rem !important;
+            }}
+            .nav-card-desc {{
+                font-size: 0.8rem !important;
+                line-height: 1.5 !important;
+            }}
         }}
 
         @media (max-width: 768px) {{
             .nav-card {{
-                height: auto;
-                min-height: 180px;
-                margin-bottom: 1rem;
+                height: auto !important; /* Fluid height adaptation for small screens */
+                min-height: 170px !important; /* Strict minimum height constraint on mobile */
+                margin-bottom: 0.85rem !important; /* Reduced bottom margin on small screens */
             }}
         }}
 
-        /* ── Metric Cards ── */
+        /* ── Metric Cards (Mobile-First Layout) ── */
         .kpi-card {{
             background: var(--panel);
             border: 1px solid var(--border);
             border-radius: 16px;
-            padding: 1.25rem;
+            padding: clamp(0.85rem, 2.5vw, 1.25rem); /* Adaptive padding */
             box-shadow: var(--shadow);
             transition: transform 0.2s ease, box-shadow 0.2s ease;
             animation: fadeInUp 0.5s ease forwards;
+            width: 100%; /* Prevents card squishing on mobile */
         }}
         .kpi-card:hover {{
             transform: translateY(-3px);
@@ -438,34 +526,35 @@ def load_css(theme_name):
         .kpi-card.red   {{ border-top: 3px solid var(--red);   box-shadow: var(--shadow), 0 -2px 16px var(--glow-red);   }}
         .kpi-card.blue  {{ border-top: 3px solid var(--blue);  box-shadow: var(--shadow), 0 -2px 16px var(--glow-blue);  }}
         .kpi-card.accent{{ border-top: 3px solid var(--accent);box-shadow: var(--shadow), 0 -2px 16px var(--glow-accent);}}
-        .kpi-icon {{ font-size: 1.5rem; margin-bottom: 0.5rem; }}
-        .kpi-label {{ font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 0.25rem; }}
-        .kpi-value {{ font-family: 'Space Grotesk', sans-serif; font-size: 2rem; font-weight: 800; color: var(--text); line-height: 1; }}
+        .kpi-icon {{ font-size: clamp(1.2rem, 3vw, 1.5rem); margin-bottom: 0.4rem; }}
+        .kpi-label {{ font-size: clamp(0.68rem, 1.8vw, 0.75rem); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 0.25rem; }}
+        .kpi-value {{ font-family: 'Space Grotesk', sans-serif; font-size: clamp(1.4rem, 3.5vw, 2rem); font-weight: 800; color: var(--text); line-height: 1; }} /* Fluid KPI metric font */
         .kpi-sub   {{ font-size: 0.75rem; color: var(--muted); margin-top: 0.25rem; }}
 
-        /* ── Model Info Card ── */
+        /* ── Model Info Card (Adaptive Mobile Layout) ── */
         .model-card {{
             background: linear-gradient(135deg, var(--panel) 0%, var(--panel-soft) 100%);
             border: 1px solid var(--border);
             border-radius: 16px;
-            padding: 1.1rem 1.4rem;
+            padding: clamp(0.85rem, 2.5vw, 1.1rem) clamp(1rem, 3vw, 1.4rem);
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: clamp(0.6rem, 2vw, 1rem);
             box-shadow: var(--shadow);
             margin-bottom: 1.25rem;
+            flex-wrap: wrap; /* Prevents overflow on narrow screens */
         }}
         .model-card-icon {{
-            width: 44px; height: 44px;
+            width: clamp(38px, 8vw, 44px); height: clamp(38px, 8vw, 44px);
             border-radius: 12px;
             background: linear-gradient(135deg, var(--accent), var(--accent-2));
             display: flex; align-items: center; justify-content: center;
-            font-size: 1.3rem;
+            font-size: clamp(1.1rem, 3vw, 1.3rem);
             box-shadow: 0 4px 16px var(--glow-accent);
             flex-shrink: 0;
         }}
         .model-card-label {{ font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); }}
-        .model-card-title {{ font-family: 'Space Grotesk', sans-serif; font-size: 1rem; font-weight: 700; color: var(--text); margin: 2px 0; }}
+        .model-card-title {{ font-family: 'Space Grotesk', sans-serif; font-size: clamp(0.9rem, 2vw, 1rem); font-weight: 700; color: var(--text); margin: 2px 0; }}
         .model-card-sub {{ font-size: 0.78rem; color: var(--muted); }}
         .model-score-pill {{
             margin-left: auto;
@@ -479,13 +568,14 @@ def load_css(theme_name):
             white-space: nowrap;
         }}
 
-        /* ── Sentiment Result Card ── */
+        /* ── Sentiment Result Card (Fluid Sizing) ── */
         .result-card {{
             border-radius: 20px;
-            padding: 2rem;
+            padding: clamp(1.25rem, 4vw, 2rem); /* Dynamic padding for mobile/desktop */
             position: relative;
             overflow: hidden;
             animation: fadeInUp 0.5s ease forwards;
+            width: 100%; /* Prevents card squishing on mobile */
         }}
         .result-card.positive {{
             background: linear-gradient(135deg, var(--panel) 0%, rgba(52,211,153,0.08) 100%);
@@ -588,7 +678,7 @@ def load_css(theme_name):
         .big-value {{ font-family: 'Space Grotesk', sans-serif; font-size: 1.7rem; font-weight: 800; margin-top: .25rem; color: var(--text); }}
         .insight-text {{ color: var(--muted); line-height: 1.7; font-size: 0.9rem; }}
 
-        /* ── Main Buttons ── */
+        /* ── Main Buttons (44px Minimum Touch Target) ── */
         .stButton > button, .stDownloadButton > button {{
             background: linear-gradient(135deg, var(--accent), var(--accent-2)) !important;
             color: #FFFFFF !important;
@@ -598,10 +688,19 @@ def load_css(theme_name):
             font-size: 0.95rem !important;
             font-family: 'Inter', sans-serif !important;
             padding: 0.7rem 1.4rem !important;
+            min-height: 44px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
             letter-spacing: 0.015em !important;
             transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1) !important;
             box-shadow: 0 4px 16px var(--glow-accent) !important;
             text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15) !important;
+        }}
+
+        .stButton > button:focus-visible, .stDownloadButton > button:focus-visible {{
+            outline: 2px solid var(--accent) !important;
+            outline-offset: 2px !important;
         }}
 
         .stButton > button *, .stDownloadButton > button * {{
@@ -626,8 +725,9 @@ def load_css(theme_name):
             transform: translateY(0) !important;
         }}
 
-        /* ── Sidebar Buttons Override ── */
-        [data-testid="stSidebar"] .stButton > button {{
+        /* ── Sidebar Buttons Override (Default / Inactive - 44px Touch Target) ── */
+        [data-testid="stSidebar"] .stButton > button,
+        [data-testid="stSidebar"] button[kind="secondary"] {{
             background: var(--panel-soft) !important;
             color: var(--text) !important;
             border: 1px solid var(--border) !important;
@@ -636,23 +736,49 @@ def load_css(theme_name):
             font-weight: 600 !important;
             text-align: left !important;
             justify-content: flex-start !important;
+            min-height: 44px !important;
+            transition: all 0.2s ease !important;
         }}
 
-        [data-testid="stSidebar"] .stButton > button * {{
+        [data-testid="stSidebar"] .stButton > button *,
+        [data-testid="stSidebar"] button[kind="secondary"] * {{
             color: var(--text) !important;
             fill: var(--text) !important;
             font-weight: 600 !important;
             font-size: 0.88rem !important;
         }}
 
-        [data-testid="stSidebar"] .stButton > button:hover {{
+        [data-testid="stSidebar"] .stButton > button:hover,
+        [data-testid="stSidebar"] button[kind="secondary"]:hover {{
             background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(168,85,247,0.15)) !important;
             border-color: var(--accent) !important;
         }}
 
-        [data-testid="stSidebar"] .stButton > button:hover * {{
+        [data-testid="stSidebar"] .stButton > button:hover *,
+        [data-testid="stSidebar"] button[kind="secondary"]:hover * {{
             color: var(--accent) !important;
             fill: var(--accent) !important;
+        }}
+
+        /* ── Sidebar Active Selected Button (Primary) ── */
+        [data-testid="stSidebar"] button[kind="primary"],
+        [data-testid="stSidebar"] button[data-testid="stBaseButton-primary"] {{
+            background: linear-gradient(135deg, var(--accent), var(--accent-2)) !important;
+            color: #FFFFFF !important;
+            border: 1px solid rgba(255, 255, 255, 0.35) !important;
+            box-shadow: 0 4px 16px var(--glow-accent) !important;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2) !important;
+            font-weight: 700 !important;
+            text-align: left !important;
+            justify-content: flex-start !important;
+        }}
+
+        [data-testid="stSidebar"] button[kind="primary"] *,
+        [data-testid="stSidebar"] button[data-testid="stBaseButton-primary"] * {{
+            color: #FFFFFF !important;
+            fill: #FFFFFF !important;
+            font-weight: 700 !important;
+            font-size: 0.9rem !important;
         }}
 
         /* ── Inputs ── */
@@ -1190,6 +1316,7 @@ def sidebar():
             f"{icon}  {page_name}",
             key=f"nav_{page_name}",
             use_container_width=True,
+            type="primary" if is_active else "secondary",
         ):
             if st.session_state.page != page_name:
                 st.session_state.page = page_name
