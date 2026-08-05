@@ -163,9 +163,12 @@ def load_css(theme_name):
             color: var(--text);
         }}
 
-        /* ── Mobile Sidebar Menu Toggle Button (Header / Collapsed Control) ── */
+        /* ── Fixed Header Bar (Prevents Text Bleed On Scroll) ── */
         [data-testid="stHeader"] {{
-            background: transparent !important;
+            background: var(--bg) !important;
+            backdrop-filter: blur(16px) !important;
+            -webkit-backdrop-filter: blur(16px) !important;
+            border-bottom: 1px solid var(--border) !important;
             z-index: 99999 !important;
         }}
         [data-testid="collapsedControl"],
@@ -768,6 +771,41 @@ def load_css(theme_name):
             text-align: center !important;
             font-size: 0.88rem !important;
             line-height: 1.2 !important;
+        }}
+
+        /* ── Mobile 2x2 Responsive Grid for Multi-Column Sample Buttons ── */
+        @media (max-width: 640px) {{
+            [data-testid="stHorizontalBlock"] {{
+                display: grid !important;
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 0.5rem !important;
+                width: 100% !important;
+            }}
+            [data-testid="stHorizontalBlock"] > [data-testid="stColumn"] {{
+                width: 100% !important;
+                min-width: 0 !important;
+                flex: 1 1 45% !important;
+            }}
+            [data-testid="stHorizontalBlock"] .stButton {{
+                width: 100% !important;
+            }}
+            [data-testid="stHorizontalBlock"] .stButton > button {{
+                width: 100% !important;
+                height: 48px !important;
+                min-height: 48px !important;
+                max-height: 48px !important;
+                padding: 0.35rem 0.45rem !important;
+                font-size: 0.82rem !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                text-align: center !important;
+            }}
+            [data-testid="stHorizontalBlock"] .stButton > button * {{
+                font-size: 0.82rem !important;
+                text-align: center !important;
+                line-height: 1.15 !important;
+            }}
         }}
 
         /* ── Sidebar Buttons Override (Default / Inactive - 44px Touch Target) ── */
@@ -1483,11 +1521,13 @@ def single_analysis_page():
 
     # ── Sample buttons ──
     st.markdown("**Try a sample:**")
+    st.markdown('<div class="sample-grid-wrap">', unsafe_allow_html=True)
     cols = st.columns(4)
     for idx, (label, text) in enumerate(SAMPLE_TEXTS.items()):
         with cols[idx]:
-            if st.button(label, key=f"sample_{idx}"):
+            if st.button(label, key=f"sample_{idx}", use_container_width=True):
                 st.session_state.single_text = text
+    st.markdown('</div>', unsafe_allow_html=True)
 
     user_text = st.text_area(
         "Customer feedback",
