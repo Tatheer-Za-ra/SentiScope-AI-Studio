@@ -9,6 +9,8 @@ import streamlit.components.v1 as components
 
 from model_service import MODEL_ID, predict_sentiment
 from preprocessing import NEGATIVE_WORDS, POSITIVE_WORDS, STOPWORDS
+from robust_csv import CSVParsingError, RobustCSVParser, parse_csv_file
+
 
 st.set_page_config(
     page_title="SentiScope AI Studio",
@@ -1763,14 +1765,28 @@ def batch_page():
         return
 
     try:
-        df = pd.read_csv(uploaded)
+        df, meta = parse_csv_file(uploaded, strict_column_count=False)
+    except CSVParsingError as parse_err:
+        st.error(f"❌ **CSV Parsing / Structural Error:** {parse_err.message}")
+        if parse_err.row_index:
+            st.caption(f"Error encountered at record row: {parse_err.row_index}")
+        return
     except Exception as error:
-        st.error(f"Could not read CSV file: {error}")
+        st.error(f"❌ **Could not read CSV file:** {error}")
         return
 
-    if df.empty:
-        st.warning("The uploaded CSV file is empty. Please upload a file with at least one row of feedback.")
+    if df is None or df.empty:
+        st.warning("⚠️ The uploaded CSV file contains no valid data rows. Please upload a file with feedback rows.")
         return
+
+    # Display structural parsing metadata badge
+    if meta:
+        st.caption(
+            f"🔍 **File Diagnosis:** Encoding: `{meta['encoding']}` | Delimiter: `{repr(meta['delimiter'])}` | "
+            f"Columns: `{len(meta['headers'])}` | Size: `{meta['total_bytes'] / 1024:.1f} KB`"
+            + (f" | Skipped Blank Lines: `{meta['skipped_blank_rows']}`" if meta.get('skipped_blank_rows') else "")
+        )
+
 
     text_columns = detect_text_columns(df)
     if not text_columns:
