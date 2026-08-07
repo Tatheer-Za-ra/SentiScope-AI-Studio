@@ -1752,7 +1752,7 @@ def batch_page():
     st.markdown('<p class="insight-text">Upload CSV feedback to analyze sentiment at scale. Supports Xquik exports with tweet_text or full_text columns.</p>', unsafe_allow_html=True)
     render_model_info_card()
 
-    uploaded = st.file_uploader("Upload CSV", type=["csv"])
+    uploaded = st.file_uploader("Upload CSV or Text File", type=["csv", "txt", "tsv"])
 
     # Track file identity so we can detect when a new file replaces the previous one
     if uploaded is not None:
@@ -1761,7 +1761,7 @@ def batch_page():
         current_file_id = None
 
     if uploaded is None:
-        st.info("Upload a CSV file containing customer feedback to begin batch analysis.")
+        st.info("Upload a CSV or TSV file containing customer feedback to begin batch analysis.")
         return
 
     try:
@@ -1772,20 +1772,23 @@ def batch_page():
             st.caption(f"Error encountered at record row: {parse_err.row_index}")
         return
     except Exception as error:
-        st.error(f"❌ **Could not read CSV file:** {error}")
+        st.error(f"❌ **Could not read file:** {error}")
         return
 
     if df is None or df.empty:
-        st.warning("⚠️ The uploaded CSV file contains no valid data rows. Please upload a file with feedback rows.")
+        st.warning("⚠️ The uploaded file contains no valid data rows. Please upload a file with feedback rows.")
         return
 
-    # Display structural parsing metadata badge
+    # Display prominent structural parsing metadata box in UI
     if meta:
-        st.caption(
-            f"🔍 **File Diagnosis:** Encoding: `{meta['encoding']}` | Delimiter: `{repr(meta['delimiter'])}` | "
-            f"Columns: `{len(meta['headers'])}` | Size: `{meta['total_bytes'] / 1024:.1f} KB`"
-            + (f" | Skipped Blank Lines: `{meta['skipped_blank_rows']}`" if meta.get('skipped_blank_rows') else "")
+        st.info(
+            f"🔍 **CSV Structure Analysis:** Detected Encoding: **`{meta['encoding']}`** | "
+            f"Delimiter: **`{repr(meta['delimiter'])}`** | "
+            f"Headers Found: **`{len(meta['headers'])}`** | "
+            f"File Size: **`{meta['total_bytes'] / 1024:.1f} KB`**"
+            + (f" | Skipped Blank Lines: **`{meta['skipped_blank_rows']}`**" if meta.get('skipped_blank_rows') else "")
         )
+
 
 
     text_columns = detect_text_columns(df)
@@ -1808,7 +1811,12 @@ def batch_page():
 
     blank_text_count = int(df[selected_column].fillna("").astype(str).str.strip().eq("").sum())
 
+    if blank_text_count == len(df):
+        st.warning(f"⚠️ **The uploaded file contains no feedback text to analyze.** All {len(df)} rows in column **'{selected_column}'** are blank or empty. Please upload a CSV file with valid feedback data.")
+        return
+
     # ── KPI metrics ──
+
     c1, c2, c3 = st.columns(3)
     with c1:
         render_kpi_card("📄", "Total Rows", len(df), "records in file", "accent")

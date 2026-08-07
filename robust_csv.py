@@ -120,9 +120,10 @@ class RobustCSVParser:
         for raw_row in reader:
             row_index += 1
 
-            if not raw_row or (len(raw_row) == 1 and str(raw_row[0]).strip() == ""):
+            if not raw_row or all(str(cell).strip() == "" for cell in raw_row):
                 self.skipped_blank_rows += 1
                 continue
+
 
             # Handle ragged / mismatched column count
             if len(raw_row) != expected_count:
